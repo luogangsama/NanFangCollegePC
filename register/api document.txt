@@ -1,0 +1,23 @@
+名称：注册
+描述：处理用户注册行为
+版本：1.0
+协议：http
+方式：POST
+返回格式：JSON
+
+请求URL：POST /api/users/register/
+参数：name, password
+请求头：默认
+请求体（JSON格式）：
+{
+    "name": "zhangSan",
+    "password": "12345678"
+}
+成功响应体（JSON格式）：
+{
+    "message": "Success"
+}
+失败响应体1（账号存在）（JSON格式）：
+{
+    "message": "Existed"
+}
