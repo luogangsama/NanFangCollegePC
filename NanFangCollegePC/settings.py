@@ -125,14 +125,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # sessions
 
-INSTALLED_APPS += [
-    'django.contrib.sessions',
-]
-
-MIDDLEWARE += [
-    'django.contrib.sessions.middleware.SessionMiddleware',
-]
-
 # 默认存储在数据库中
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
@@ -141,4 +133,4 @@ SESSION_COOKIE_NAME = 'sessionid'  # 默认会话 Cookie 的名称
 SESSION_COOKIE_AGE = 1209600      # 2 周，单位秒
 SESSION_COOKIE_SECURE = False     # 如果启用 HTTPS，则设为 True
 SESSION_COOKIE_HTTPONLY = True    # 禁止 JavaScript 访问 Cookie
-SESSION_SAVE_EVERY_REQUEST = False # 每次请求都刷新会话的过期时间
+SESSION_SAVE_EVERY_REQUEST = True # 每次请求都刷新会话的过期时间

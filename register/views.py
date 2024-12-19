@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.http import HttpResponse
 import json
+import hashlib
 # Create your views here.
 
 from pymysql import connect
@@ -20,6 +21,8 @@ def register(request):
             print(data)
             name = data['name']
             password = data['password']
+
+            hashed_password = hashlib.sha256(password.encode()).hexdigest()
             
             # 避免昵称重复
             cursor = conn.cursor()
@@ -30,7 +33,7 @@ def register(request):
                 response = JsonResponse({'message': 'Existed'})
 
             else:
-                cursor.execute(f"INSERT users VALUES('{name}', '{password}')")
+                cursor.execute(f"INSERT users(name, password) VALUES('{name}', '{hashed_password}')")
                 conn.commit()
                 response = JsonResponse({'message': 'Success'})
             response['Access-Control-Allow-Origin'] = '*'
