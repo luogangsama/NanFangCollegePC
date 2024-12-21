@@ -2,7 +2,9 @@ from django.shortcuts import render
 from django.contrib.sessions.models import Session
 from django.http import JsonResponse
 from django.utils import timezone
+from django.utils.timezone import now
 from common.models import call_report_table
+from django.contrib.auth.models import User
 import hashlib
 import json
 
@@ -73,7 +75,7 @@ def call_report(request):
                     issue=issue,
                     date=date
                 )
-                return JsonResponse({'message': 'Success'}, status=200)
+                return JsonResponse({'message': 'Success', 'orderDetails': '订单提交成功'}, status=200)
             else:
                 return JsonResponse({'message': 'Session has expired'}, status=200)
         except Session.DoesNotExist:
