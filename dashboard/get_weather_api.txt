@@ -1,0 +1,26 @@
+概述：
+    登陆验证接口
+请求url：
+    http://localtion:8000/api/dashboard/getWeatherApiKey/
+请求方式：
+    GET
+参数：
+    无
+响应示例：
+    sessionid成功验证：
+    {
+        'message': 'Success'
+        'apiKey': 'your_apiKey'
+    }
+    sessionid过期：
+    {
+        'message': 'Session has expired'
+    }
+    sessionid不存在：
+    {
+        'message': 'Invalid session'
+    }
+    无cookies:
+    {
+        'message': 'No sessionid cookie'
+    }

@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-tqo4(yo8ht-7$5e8p6-*d+!ti+nsj&dz-2&+*-(^jovw)wlu0@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '0.0.0.0', '172.0.0.1', '192.168.50.146']
+ALLOWED_HOSTS = ['localhost', '0.0.0.0', '172.0.0.1', '192.168.50.146', '127.0.0.1']
 
 
 # Application definition
@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    'common.apps.CommonConfig',
 ]
 
 MIDDLEWARE = [
@@ -123,14 +125,14 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# sessions
+# # sessions
 
-# 默认存储在数据库中
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+# # 默认存储在数据库中
+# SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
-# 会话 Cookie 的配置
-SESSION_COOKIE_NAME = 'sessionid'  # 默认会话 Cookie 的名称
-SESSION_COOKIE_AGE = 1209600      # 2 周，单位秒
-SESSION_COOKIE_SECURE = False     # 如果启用 HTTPS，则设为 True
-SESSION_COOKIE_HTTPONLY = True    # 禁止 JavaScript 访问 Cookie
-SESSION_SAVE_EVERY_REQUEST = True # 每次请求都刷新会话的过期时间
+# # 会话 Cookie 的配置
+# SESSION_COOKIE_NAME = 'sessionid'  # 默认会话 Cookie 的名称
+# SESSION_COOKIE_AGE = 1209600      # 2 周，单位秒
+# SESSION_COOKIE_SECURE = False     # 如果启用 HTTPS，则设为 True
+# SESSION_COOKIE_HTTPONLY = True    # 禁止 JavaScript 访问 Cookie
+# SESSION_SAVE_EVERY_REQUEST = True # 每次请求都刷新会话的过期时间

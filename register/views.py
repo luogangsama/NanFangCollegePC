@@ -1,51 +1,38 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.http import HttpResponse
+from django.contrib.auth.models import User
 import json
 import hashlib
 # Create your views here.
 
-from pymysql import connect
-
-conn = connect(
-    host='localhost',
-    user='root',
-    password='py123456',
-    database='NanFangCollegePC'
-)
+def Response(message:str, method:str):
+    response = JsonResponse({'message': message})
+    response['Access-Control-Allow-Origin'] = '*'
+    response['Access-Control-Allow-Methods'] = method
+    response['Access-Control-Allow-Headers'] = 'Content-Type'
+    return response
 
 def register(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            print(data)
-            name = data['name']
+            username = data['name']
             password = data['password']
 
-            hashed_password = hashlib.sha256(password.encode()).hexdigest()
-            
-            # 避免昵称重复
-            cursor = conn.cursor()
-            cursor.execute("SELECT name FROM users;")
-            conn.commit()
-            data = cursor.fetchall()
-            if data and name in data[0]:
-                response = JsonResponse({'message': 'Existed'})
-
-            else:
-                cursor.execute(f"INSERT users(name, password) VALUES('{name}', '{hashed_password}')")
-                conn.commit()
-                response = JsonResponse({'message': 'Success'})
-            response['Access-Control-Allow-Origin'] = '*'
-            response['Access-Control-Allow-Methods'] = 'POST'
-            response['Access-Control-Allow-Headers'] = 'Content-Type'
-
-            cursor.close()
-
-            return response
+            try:
+                user = User.objects.get(username=username)
+                response = Response(message='Existed', method='POST')
+                return response
+            except:
+                record = User.objects.create(
+                    username=username,
+                    last_name='customer'
+                )
+                record.set_password(password)
+                record.save()
+                response = Response(message='Success', method='POST')
+                return response
 
         except json.JSONDecodeError:
-            return JsonResponse({'message': 'Invalid JSON data'}, status=400)
-
-    return JsonResponse({'message': 'Method not allowed'}, status=405)
-
+            return JsonResponse({'message': 'Method not allowed'}, status=405)

@@ -1,0 +1,28 @@
+概述：
+    登陆验证接口
+请求url：
+    http://localtion:8000/api/users/login/
+请求方式：
+    POST
+表头：
+    Content-Type
+参数：
+    name(必须), password(必须且为明文密码（后端进行加密）)
+输入示例:
+    {
+        'name': '张三',
+        'password': '12345678'
+    }
+响应示例：
+    成功验证：
+    {
+        'message': 'Success'
+    }
+    密码错误：
+    {
+        'message': 'PASSWORD ERROR'
+    }
+    用户不存在：
+    {
+        'message': 'USER NOT EXIST'
+    }
