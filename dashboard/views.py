@@ -63,11 +63,15 @@ def call_report(request):
                 data = json.loads(request.body)
                 userPhoneNumber = data['userPhoneNumber']
                 address = data['address']
+                issue = data['issue']
+                date = data['date']
 
                 call_report_table.objects.create(
                     username=user.username,
                     userPhoneNumber=userPhoneNumber,
-                    address=address
+                    address=address,
+                    issue=issue,
+                    date=date
                 )
                 return JsonResponse({'message': 'Success'}, status=200)
             else:
