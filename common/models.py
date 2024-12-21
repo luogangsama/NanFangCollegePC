@@ -30,4 +30,4 @@ class call_report_table(models.Model):
     # 维修人员手机号码
     workerPhoneNumber = models.CharField(max_length=11)
     # 维修人员姓名
-    worderName = models.CharField(max_length=200)
+    workerName = models.CharField(max_length=200)
