@@ -1,0 +1,30 @@
+概述：
+    登陆验证接口
+请求url：
+    http://localtion:8000/api/dashboard/call_report/
+请求方式：
+    POST
+参数：
+    userPhoneNumber, address
+输入示例:
+    {
+        'userPhoneNumber': '12345678901',
+        'address': 'tokyo'
+    }
+响应示例：
+    sessionid成功验证：
+    {
+        'message': 'Success'
+    }
+    sessionid过期：
+    {
+        'message': 'Session has expired'
+    }
+    sessionid不存在：
+    {
+        'message': 'Invalid session'
+    }
+    未携带cookies：
+    {
+        'message': 'No sessionid cookie'
+    }
