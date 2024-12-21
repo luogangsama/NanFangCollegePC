@@ -17,6 +17,10 @@ class call_report_table(models.Model):
     userPhoneNumber = models.CharField(max_length=11)
     # 地址
     address = models.CharField(max_length=50)
+    # 问题
+    issue = models.CharField(max_length=200)
+    # 期待上门时间
+    date = models.CharField(max_length=20)
 
     # 订单分配状态：0: 未分配; 1: 已分配
     allocationState = models.BooleanField(default=False)

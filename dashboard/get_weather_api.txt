@@ -1,7 +1,7 @@
 概述：
     登陆验证接口
 请求url：
-    http://localtion:8000/api/dashboard/getWeatherApiKey/
+    http://localhost:80/api/dashboard/getWeatherApiKey/
 请求方式：
     GET
 参数：

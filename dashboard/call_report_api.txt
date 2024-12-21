@@ -1,7 +1,7 @@
 概述：
     登陆验证接口
 请求url：
-    http://localtion:8000/api/dashboard/call_report/
+    http://localhost:80/api/dashboard/call_report/
 请求方式：
     POST
 参数：
@@ -10,6 +10,8 @@
     {
         'userPhoneNumber': '12345678901',
         'address': 'tokyo'
+        'issue': 'your_issue',
+        'date': '2024/12/21'
     }
 响应示例：
     sessionid成功验证：
