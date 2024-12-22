@@ -82,3 +82,45 @@ def call_report(request):
             return JsonResponse({'message': 'Invalid session'}, status=200)
     else:
         return JsonResponse({'message': 'No sessionid cookie'}, status=200)
+
+def user_get_history_report(request):
+    sessionid = request.COOKIES.get('sessionid')
+    
+    if sessionid:
+        try:
+            session = Session.objects.get(session_key=sessionid)
+            session_data = session.get_decoded()
+            if session.expire_date > timezone.now():
+                # api验证通过后，根据sessionid获取用户
+                user = get_user_from_sessionid(sessionid=sessionid)
+                
+                try:
+                    report_info = call_report_table.objects.get(
+                        username=user.username
+                    )
+                except:
+                    return JsonResponse({'message': 'No history report'}, status=200)
+                # 获取用户历史订单信息
+                userPhoneNumber = report_info.userPhoneNumber
+                address = report_info.address
+                issue = report_info.issue
+                allocationState = report_info.allocationState
+                completeState = report_info.completeState
+                date = report_info.date # 预约时间
+
+                return JsonResponse({
+                    'message': 'Success',
+                    'report_info': {
+                        'userPhoneNumber': userPhoneNumber,
+                        'address': address,
+                        'issue': issue,
+                        'allocationState': allocationState,
+                        'date': date
+                    }
+                }, status=200)
+            else:
+                return JsonResponse({'message': 'Session has expired'}, status=200)
+        except Session.DoesNotExist:
+            return JsonResponse({'message': 'Invalid session'}, status=200)
+    else:
+        return JsonResponse({'message': 'No sessionid cookie'}, status=200)

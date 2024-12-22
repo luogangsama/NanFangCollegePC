@@ -1,0 +1,34 @@
+概述：
+    用户获取所提交的历史订单
+请求url：
+    http://localhost:80/api/dashboard/user_get_history_report/
+请求方式：
+    GET
+响应示例：
+    sessionid成功验证且有历史订单：
+    {
+        'message': 'Success',
+        'report_info': {
+            'userPhoneNumber': 'userPhoneNumber',
+            'address': 'address',
+            'issue': 'issue',
+            'allocationState': bool, # True: 已被分配；False：未被分配
+            'date': 'date' # 预约的时期
+        }
+    }, status=200
+    sessionid成功验证但没有历史订单：
+    {
+        'message': 'No history report'
+    }, status=200
+    sessionid过期：
+    {
+        'message': 'Session has expired'
+    }
+    sessionid不存在：
+    {
+        'message': 'Invalid session'
+    }
+    未携带cookies：
+    {
+        'message': 'No sessionid cookie'
+    }
