@@ -1,5 +1,5 @@
 概述：
-    登出api
+    登出apI
 请求url：
     http://localhost:80/api/dashboard/logout/
 请求方式：
