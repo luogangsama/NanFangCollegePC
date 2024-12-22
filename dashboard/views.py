@@ -115,7 +115,7 @@ def user_get_history_report(request):
                     'report_info':[]
                 }
                 # 获取用户历史订单信息
-                for report_infos in report_infos:
+                for report_info in report_infos:
                     userPhoneNumber = report_info.userPhoneNumber
                     address = report_info.address
                     issue = report_info.issue
