@@ -1,0 +1,25 @@
+概述：
+    登出api
+请求url：
+    http://localhost:80/api/dashboard/logout/
+请求方式：
+    GET
+参数：
+    无
+响应示例：
+    sessionid成功验证，并退出成功：
+    {
+        'message': 'Success'
+    }
+    sessionid过期：
+    {
+        'message': 'Session has expired'
+    }
+    sessionid不存在：
+    {
+        'message': 'Invalid session'
+    }
+    无cookies:
+    {
+        'message': 'No sessionid cookie'
+    }

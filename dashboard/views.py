@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.utils.timezone import now
 from common.models import call_report_table
 from django.contrib.auth.models import User
+from django.contrib.auth import logout
 import hashlib
 import json
 
@@ -36,6 +37,9 @@ def modifyPassword(request):
     pass
 
 def get_weather(request):
+    '''
+    验证前端请求的cookies可用后响应前端一个api密钥（用于获取天气信息）
+    '''
     apiKey = '7be7dff3729983328f5bbc4815cd5022'
     sessionid = request.COOKIES.get('sessionid')
     
@@ -52,6 +56,9 @@ def get_weather(request):
         return JsonResponse({'message': 'No sessionid cookie'}, status=200)
 
 def call_report(request):
+    '''
+    接受前端发送的报单请求，并验证cookies后将订单存入数据库
+    '''
     sessionid = request.COOKIES.get('sessionid')
     
     if sessionid:
@@ -84,6 +91,9 @@ def call_report(request):
         return JsonResponse({'message': 'No sessionid cookie'}, status=200)
 
 def user_get_history_report(request):
+    '''
+    响应前端用户所报修的历史订单
+    '''
     sessionid = request.COOKIES.get('sessionid')
     
     if sessionid:
@@ -118,6 +128,25 @@ def user_get_history_report(request):
                         'date': date
                     }
                 }, status=200)
+            else:
+                return JsonResponse({'message': 'Session has expired'}, status=200)
+        except Session.DoesNotExist:
+            return JsonResponse({'message': 'Invalid session'}, status=200)
+    else:
+        return JsonResponse({'message': 'No sessionid cookie'}, status=200)
+
+def log_out(request):
+    '''
+    验证前端请求的cookies后，搜索session数据库中符合sessionid的数据行予以删除或使其失效
+    '''
+    sessionid = request.COOKIES.get('sessionid')
+    
+    if sessionid:
+        try:
+            session = Session.objects.get(session_key=sessionid)
+            if session.expire_date > timezone.now():
+                logout(request)
+                return JsonResponse({'message': 'Success'}, status=200)
             else:
                 return JsonResponse({'message': 'Session has expired'}, status=200)
         except Session.DoesNotExist:
