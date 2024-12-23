@@ -157,3 +157,26 @@ def log_out(request):
             return JsonResponse({'message': 'Invalid session'}, status=200)
     else:
         return JsonResponse({'message': 'No sessionid cookie'}, status=200)
+
+def save_phone_number(request):
+    '''
+    验证sessionid合法后保存接收到的手机号码
+    '''
+    sessionid = request.COOKIES.get('sessionid')
+    
+    if sessionid:
+        try:
+            session = Session.objects.get(session_key=sessionid)
+            if session.expire_date > timezone.now():
+                # 解析请求消息体
+                data = json.loads(request.body)
+                user = get_user_from_sessionid(sessionid=sessionid)
+                user.PhoneNumber = data.PhoneNumber
+                user.save()
+                return JsonResponse({'message': 'Success'}, status=200)
+            else:
+                return JsonResponse({'message': 'Session has expired'}, status=200)
+        except Session.DoesNotExist:
+            return JsonResponse({'message': 'Invalid session'}, status=200)
+    else:
+        return JsonResponse({'message': 'No sessionid cookie'}, status=200)

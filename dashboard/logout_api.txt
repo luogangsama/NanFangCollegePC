@@ -1,7 +1,7 @@
 概述：
     登出apI
 请求url：
-    http://localhost:80/api/dashboard/logout/
+    https://localhost/api/dashboard/logout/
 请求方式：
     GET
 参数：

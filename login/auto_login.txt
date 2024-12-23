@@ -1,7 +1,7 @@
 概述：
     登录界面验证登录状态（检测以前是否有登录）
 请求url：
-    https://8.134.178.71/api/users/validate-session/
+    https://localhost/api/users/validate-session/
 请求方式：
     GET
 参数：

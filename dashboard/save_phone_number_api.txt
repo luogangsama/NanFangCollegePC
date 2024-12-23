@@ -1,16 +1,19 @@
 概述：
-    获取天气apiKey接口
+    保存手机号
 请求url：
-    https://localhost/api/dashboard/getWeatherApiKey/
+    https://localhost/api/dashboard/savePhoneNumber/
 请求方式：
-    GET
+    POST
 参数：
-    无
+    phoneNumber
+输入示例:
+    {
+        'phoneNumber': '12345678901'
+    }
 响应示例：
     sessionid成功验证：
     {
         'message': 'Success'
-        'apiKey': 'your_apiKey'
     }
     sessionid过期：
     {
@@ -20,7 +23,7 @@
     {
         'message': 'Invalid session'
     }
-    无cookies:
+    未携带cookies：
     {
         'message': 'No sessionid cookie'
     }
