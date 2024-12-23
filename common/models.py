@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, User
 # Create your models here.
 
 class Users(models.Model):
@@ -9,6 +9,13 @@ class Users(models.Model):
     password = models.CharField(max_length=256)
     # 用户身份 0: 普通用户; 1: 维修人员; 2: 订单分配人员
     label = models.CharField(max_length=2)
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    phoneNumber = models.CharField(max_length=11)
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
 
 class call_report_table(models.Model):
     # 用户名称

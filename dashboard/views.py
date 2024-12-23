@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.utils.timezone import now
 from common.models import call_report_table
+from common.models import UserProfile
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
 import hashlib
@@ -171,8 +172,7 @@ def save_phone_number(request):
                 # 解析请求消息体
                 data = json.loads(request.body)
                 user = get_user_from_sessionid(sessionid=sessionid)
-                user.PhoneNumber = data['phoneNumber']
-                user.save()
+                profile = UserProfile.objects.create(user=user, phoneNumber=phoneNumber)
                 return JsonResponse({'message': 'Success'}, status=200)
             else:
                 return JsonResponse({'message': 'Session has expired'}, status=200)
