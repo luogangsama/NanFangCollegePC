@@ -171,6 +171,7 @@ def save_phone_number(request):
             if session.expire_date > timezone.now():
                 # 解析请求消息体
                 data = json.loads(request.body)
+                phoneNumber = data['phoneNumber']
                 user = get_user_from_sessionid(sessionid=sessionid)
                 profile = UserProfile.objects.create(user=user, phoneNumber=phoneNumber)
                 return JsonResponse({'message': 'Success'}, status=200)
