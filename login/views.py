@@ -35,3 +35,20 @@ def signin(request):
         else:
             response = Response(message='PASSWORD ERROR', method='POST')
             return response
+
+def auto_login(request):
+    sessionid = request.COOKIES.get('sessionid')
+    
+    if sessionid:
+        try:
+            session = Session.objects.get(session_key=sessionid)
+            session_data = session.get_decoded()
+            if session.expire_date > timezone.now():
+                # 验证sessionid合法后返回登录成功
+                return JsonResponse({'message': 'Success'}, status=200)
+            else:
+                return JsonResponse({'message': 'Session has expired'}, status=200)
+        except Session.DoesNotExist:
+            return JsonResponse({'message': 'Invalid session'}, status=200)
+    else:
+        return JsonResponse({'message': 'No sessionid cookie'}, status=200)

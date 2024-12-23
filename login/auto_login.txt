@@ -1,0 +1,25 @@
+概述：
+    登录界面验证登录状态（检测以前是否有登录）
+请求url：
+    https://8.134.178.71/api/users/validate-session/
+请求方式：
+    GET
+参数：
+    无
+响应示例：
+    sessionid成功验证：
+    {
+        'message': 'Success'
+    }
+    sessionid过期：
+    {
+        'message': 'Session has expired'
+    }
+    sessionid不存在：
+    {
+        'message': 'Invalid session'
+    }
+    无cookies:
+    {
+        'message': 'No sessionid cookie'
+    }

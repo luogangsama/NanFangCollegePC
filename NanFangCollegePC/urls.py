@@ -19,11 +19,13 @@ from django.urls import path, include
 
 from register.views import register
 from login.views import signin
+from login.views import auto_login
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/users/register/', register),
     path('api/users/login/', signin),
+    path('api/users/validate-session/', auto_login),
 
     path('api/dashboard/', include('dashboard.urls')),
 ]
