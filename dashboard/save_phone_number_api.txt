@@ -1,5 +1,5 @@
 概述：
-    保存手机号
+    保存手机号与用户名
 请求url：
     https://localhost/api/dashboard/savePhoneNumber/
 请求方式：
@@ -10,10 +10,23 @@
     {
         'phoneNumber': '12345678901'
     }
+    or
+    {
+        'newName': 'test'
+    }
+    or
+    {
+        'phoneNumber': '12345678901',
+        'newName': 'test'
+    }
 响应示例：
     sessionid成功验证：
     {
         'message': 'Success'
+    }
+    新名称被占用：
+    {
+        'message': 'This user is existed'
     }
     sessionid过期：
     {

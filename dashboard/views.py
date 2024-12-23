@@ -6,7 +6,7 @@ from django.utils.timezone import now
 from common.models import call_report_table
 from common.models import UserProfile
 from django.contrib.auth.models import User
-from django.contrib.auth import logout
+from django.contrib.auth import logout, login
 import hashlib
 import json
 
@@ -171,17 +171,30 @@ def save_user_info(request):
             if session.expire_date > timezone.now():
                 # 解析请求消息体
                 data = json.loads(request.body)
+# ==================================================================================
                 try:
                     new_name = data['newName']
                 except:
                     new_name = get_user_from_sessionid(sessionid=sessionid).username
-                # new_phone_number = data['newPhoneNumber']
-                new_phone_number = data['phoneNumber']
-
+                try:
+                    new_phone_number = data['phoneNumber']
+                except:
+                    try:
+                        new_phone_number = UserProfile.objects.get(
+                            user=get_user_from_sessionid(sessionid=sessionid)
+                        ).phoneNumber
+                    except:
+                        new_phone_number = None
+                #以上一块代码的目的是为了判断用户是只想改任意一项还是两项都要改。
+                #电话号码的部分的基本逻辑：若消息体中没有phoneNumber则先查找一下UserProfile表中是否有这个用户对应的号码，
+                #若是有则直接拿出来赋值给new_phone_number，这样更新后号码不变，若是查找不到，就预设一个None
+# ==================================================================================
                 # 确保新名称未被占用
                 try: 
+                    # 订正可能出现的新旧名相同的情况，后续应当修改实现，这里是临时打个补丁
                     if new_name == get_user_from_sessionid(sessionid=sessionid).username:
                         raise User.DoesNotExist('new name == old name')
+                    # 确保新名称未被占用
                     User.objects.get(username=new_name)
                     return JsonResponse({'message': 'This user is existed'})
                 except User.DoesNotExist:
@@ -201,10 +214,9 @@ def save_user_info(request):
                             user=user,
                             phoneNumber=new_phone_number
                         )
-
-                # phoneNumber = data['phoneNumber']
-                # user = get_user_from_sessionid(sessionid=sessionid)
-                # # profile = UserProfile.objects.create(user=user, phoneNumber=phoneNumber)
+                # 登出再登入（刷新sessionid）
+                logout(request=request)
+                login(request=request, user=user)
                 
                 return JsonResponse({'message': 'Success'}, status=200)
             else:
@@ -213,14 +225,3 @@ def save_user_info(request):
             return JsonResponse({'message': 'Invalid session'}, status=200)
     else:
         return JsonResponse({'message': 'No sessionid cookie'}, status=200)
-
-def test(request):
-    ojt = UserProfile.objects.create(
-        user=User.objects.get(username='test'),
-        phoneNumber='12345678901'
-    )
-    print(ojt.user)
-    user = User.objects.get(name='test')
-    user.username = 'new name'
-    user.save()
-    print(ojt.user)
