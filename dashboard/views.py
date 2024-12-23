@@ -175,7 +175,8 @@ def save_user_info(request):
                     new_name = data['newName']
                 except:
                     new_name = get_user_from_sessionid(sessionid=sessionid).username
-                new_phone_number = data['newPhoneNumber']
+                # new_phone_number = data['newPhoneNumber']
+                new_phone_number = data['phoneNumber']
 
                 # 确保新名称未被占用
                 try: 
