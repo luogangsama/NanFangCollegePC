@@ -159,7 +159,7 @@ def log_out(request):
     else:
         return JsonResponse({'message': 'No sessionid cookie'}, status=200)
 
-def save_phone_number(request):
+def save_user_info(request):
     '''
     验证sessionid合法后保存接收到的手机号码
     '''
@@ -173,7 +173,8 @@ def save_phone_number(request):
                 data = json.loads(request.body)
                 phoneNumber = data['phoneNumber']
                 user = get_user_from_sessionid(sessionid=sessionid)
-                profile = UserProfile.objects.create(user=user, phoneNumber=phoneNumber)
+                # profile = UserProfile.objects.create(user=user, phoneNumber=phoneNumber)
+                
                 return JsonResponse({'message': 'Success'}, status=200)
             else:
                 return JsonResponse({'message': 'Session has expired'}, status=200)
@@ -181,3 +182,14 @@ def save_phone_number(request):
             return JsonResponse({'message': 'Invalid session'}, status=200)
     else:
         return JsonResponse({'message': 'No sessionid cookie'}, status=200)
+
+def test(request):
+    ojt = UserProfile.objects.create(
+        user=User.objects.get(username='test'),
+        phoneNumber='12345678901'
+    )
+    print(ojt.user)
+    user = User.objects.get(name='test')
+    user.username = 'new name'
+    user.save()
+    print(ojt.user)
