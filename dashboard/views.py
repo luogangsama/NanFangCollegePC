@@ -171,9 +171,37 @@ def save_user_info(request):
             if session.expire_date > timezone.now():
                 # 解析请求消息体
                 data = json.loads(request.body)
-                phoneNumber = data['phoneNumber']
-                user = get_user_from_sessionid(sessionid=sessionid)
-                # profile = UserProfile.objects.create(user=user, phoneNumber=phoneNumber)
+                try:
+                    new_name = data['newName']
+                except:
+                    new_name = get_user_from_sessionid(sessionid=sessionid).username
+                new_phone_number = data['newPhoneNumber']
+
+                # 确保新名称未被占用
+                try: 
+                    User.objects.get(username=new_name)
+                    return JsonResponse({'message': 'This user is existed'})
+                except User.DoesNotExist:
+                    # 首先更改auth_user表中的username
+                    user = User.objects.get(username=get_user_from_sessionid(sessionid=sessionid).username)
+                    user.username = new_name
+                    user.save()
+                    # 然后根据新user去更改phone number
+                    try:
+                        # 首先判断是否先前保存了phone number，有则修改现有数据行
+                        userProfile = UserProfile.objects.get(user=user)
+                        userProfile.phoneNumber = new_phone_number
+                        userProfile.save()
+                    except UserProfile.DoesNotExist:
+                        # 先前并为保存phone number，就新增一行数据
+                        UserProfile.objects.create(
+                            user=user,
+                            phoneNumber=new_phone_number
+                        )
+
+                # phoneNumber = data['phoneNumber']
+                # user = get_user_from_sessionid(sessionid=sessionid)
+                # # profile = UserProfile.objects.create(user=user, phoneNumber=phoneNumber)
                 
                 return JsonResponse({'message': 'Success'}, status=200)
             else:
