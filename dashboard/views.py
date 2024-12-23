@@ -171,7 +171,7 @@ def save_phone_number(request):
                 # 解析请求消息体
                 data = json.loads(request.body)
                 user = get_user_from_sessionid(sessionid=sessionid)
-                user.PhoneNumber = data.PhoneNumber
+                user.PhoneNumber = data.phoneNumber
                 user.save()
                 return JsonResponse({'message': 'Success'}, status=200)
             else:
