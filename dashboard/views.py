@@ -180,6 +180,8 @@ def save_user_info(request):
 
                 # 确保新名称未被占用
                 try: 
+                    if new_name == get_user_from_sessionid(sessionid=sessionid).username:
+                        raise User.DoesNotExist('new name == old name')
                     User.objects.get(username=new_name)
                     return JsonResponse({'message': 'This user is existed'})
                 except User.DoesNotExist:
