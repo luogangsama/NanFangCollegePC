@@ -19,7 +19,8 @@ class UserProfile(models.Model):
 
 class call_report_table(models.Model):
     # 用户名称
-    username = models.CharField(max_length=200)
+    # username = models.CharField(max_length=200)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='call_report_table_profile_User')
     # 手机号码
     userPhoneNumber = models.CharField(max_length=11)
     # 地址
@@ -37,4 +38,4 @@ class call_report_table(models.Model):
     # 维修人员手机号码
     workerPhoneNumber = models.CharField(max_length=11)
     # 维修人员姓名
-    workerName = models.CharField(max_length=200)
+    workerName = models.OneToOneField(User, on_delete=models.CASCADE, related_name='call_report_table_profile_worker')

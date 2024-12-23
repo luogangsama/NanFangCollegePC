@@ -77,7 +77,7 @@ def call_report(request):
                 date = data['date']
 
                 call_report_table.objects.create(
-                    username=user.username,
+                    user=user,
                     userPhoneNumber=userPhoneNumber,
                     address=address,
                     issue=issue,
@@ -106,7 +106,7 @@ def user_get_history_report(request):
                 user = get_user_from_sessionid(sessionid=sessionid)
                 
                 report_infos = call_report_table.objects.filter(
-                        username=user.username
+                    user=user
                     )
                 if len(report_infos) == 0:
                     return JsonResponse({'message': 'No history report'}, status=200)
