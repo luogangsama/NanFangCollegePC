@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
+from django.contrib.sessions.models import Session
 from django.http import JsonResponse
 import json
 import hashlib
