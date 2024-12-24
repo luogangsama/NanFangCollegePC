@@ -1,0 +1,31 @@
+概述：
+    获取手机号码
+请求url：
+    https://localhost/api/dashboard/getPhoneNumber/
+请求方式：
+    GET
+参数：
+    无
+响应示例：
+    sessionid成功验证：
+    成功查询到手机号码：
+    {
+        'message': 'Success',
+        'phoneNumber': '12345678901'
+    }
+    无法查询到手机号码：
+    {
+        'message': 'No phone number'
+    }
+    sessionid过期：
+    {
+        'message': 'Session has expired'
+    }
+    sessionid不存在：
+    {
+        'message': 'Invalid session'
+    }
+    无cookies:
+    {
+        'message': 'No sessionid cookie'
+    }

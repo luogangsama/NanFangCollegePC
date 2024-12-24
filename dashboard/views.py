@@ -11,7 +11,6 @@ import hashlib
 import json
 
 # Create your views here.
-
 def get_user_from_sessionid(sessionid):
     try:
         # 获取会话对象
@@ -219,6 +218,26 @@ def save_user_info(request):
                 login(request=request, user=user)
                 
                 return JsonResponse({'message': 'Success'}, status=200)
+            else:
+                return JsonResponse({'message': 'Session has expired'}, status=200)
+        except Session.DoesNotExist:
+            return JsonResponse({'message': 'Invalid session'}, status=200)
+    else:
+        return JsonResponse({'message': 'No sessionid cookie'}, status=200)
+    
+def get_phone_number(request):
+    sessionid = request.COOKIES.get('sessionid')
+    
+    if sessionid:
+        try:
+            session = Session.objects.get(session_key=sessionid)
+            if session.expire_date > timezone.now():
+                try:
+                    user = get_user_from_sessionid(sessionid=sessionid)
+                    phoneNumber = UserProfile.objects.get(user=user).phoneNumber
+                    return JsonResponse({'message': 'Success', 'phoneNumber': phoneNumber}, status=200)
+                except User.DoesNotExist:
+                    return JsonResponse({'message': 'No phone number'})
             else:
                 return JsonResponse({'message': 'Session has expired'}, status=200)
         except Session.DoesNotExist:

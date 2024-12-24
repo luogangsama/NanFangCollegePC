@@ -6,6 +6,7 @@ from dashboard.views import call_report
 from dashboard.views import user_get_history_report
 from dashboard.views import log_out
 from dashboard.views import save_user_info
+from dashboard.views import get_phone_number
 
 
 urlpatterns = [
@@ -15,5 +16,6 @@ urlpatterns = [
     path('user_get_history_report/', user_get_history_report),
     path('logout/', log_out),
 
-    path('savePhoneNumber/', save_user_info)
+    path('savePhoneNumber/', save_user_info),
+    path('getPhoneNumber', get_phone_number),
 ]
