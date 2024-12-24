@@ -17,5 +17,5 @@ urlpatterns = [
     path('logout/', log_out),
 
     path('savePhoneNumber/', save_user_info),
-    path('getPhoneNumber', get_phone_number),
+    path('getPhoneNumber/', get_phone_number),
 ]
