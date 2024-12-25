@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.http import HttpResponse
 from django.contrib.auth.models import User
+from common.models import UserProfile
 import json
 import hashlib
 # Create your views here.
@@ -28,6 +29,9 @@ def register(request):
                 record = User.objects.create(
                     username=username,
                     last_name='customer'
+                )
+                UserProfile.objects.create(
+                    user=record # 在用户信息表中初始化一行
                 )
                 record.set_password(password)
                 record.save()
