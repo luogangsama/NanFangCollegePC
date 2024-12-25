@@ -10,6 +10,7 @@
         'message': 'Success',
         'report_info': [
             {
+                'reportId': 'reportId',
                 'userPhoneNumber': 'userPhoneNumber',
                 'address': 'address',
                 'issue': 'issue',

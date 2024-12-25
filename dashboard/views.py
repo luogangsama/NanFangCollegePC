@@ -123,8 +123,10 @@ def user_get_history_report(request):
                     allocationState = report_info.allocationState
                     completeState = report_info.completeState
                     date = report_info.date # 预约时间
+                    report_id = report_info.ID
 
                     return_report_info['report_info'].append({
+                        'reportId': report_id,
                         'userPhoneNumber': userPhoneNumber,
                         'address': address,
                         'issue': issue,
@@ -272,6 +274,33 @@ def renew_password(request):
                     return JsonResponse({'message': 'Success'}, status=200)
                 else:
                     return JsonResponse({'message': 'Password error'}, status=200)
+
+            else:
+                return JsonResponse({'message': 'Session has expired'}, status=200)
+        except Session.DoesNotExist:
+            return JsonResponse({'message': 'Invalid session'}, status=200)
+    else:
+        return JsonResponse({'message': 'No sessionid cookie'}, status=200)
+
+def assign_order(request):
+    '''
+    管理员分配订单
+    '''
+    sessionid = request.COOKIES.get('sessionid')
+    
+    if sessionid:
+        try:
+            session = Session.objects.get(session_key=sessionid)
+            session_data = session.get_decoded()
+            if session.expire_date > timezone.now():
+                # api验证通过后，获取请求消息体中的内容
+                user = get_user_from_sessionid(sessionid=sessionid)
+                if user.last_name != 'admin':
+                    # 权限不符合
+                    return JsonResponse({'message': 'Permission error'})
+                data = json.loads(request.body)
+                worker = data['worker_name']
+
 
             else:
                 return JsonResponse({'message': 'Session has expired'}, status=200)
