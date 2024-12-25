@@ -1,0 +1,38 @@
+概述：
+    用户结单
+请求url：
+    https://localhost/api/dashboard/complete_report/
+请求方式：
+    POST
+参数：
+    reportId
+请求示例：
+{
+    'reportId': '555'   
+}
+响应示例：
+    sessionid成功验证：
+    成功结单：
+    {
+        'message': 'Success',
+    }
+    订单已结束：
+    {
+        'message': 'This report is completed'
+    }
+    订单不存在：
+    {
+        'message': 'This report is no exist'
+    }
+    sessionid过期：
+    {
+        'message': 'Session has expired'
+    }
+    sessionid不存在：
+    {
+        'message': 'Invalid session'
+    }
+    无cookies:
+    {
+        'message': 'No sessionid cookie'
+    }

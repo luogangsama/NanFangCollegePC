@@ -377,3 +377,37 @@ def assign_order(request):
             return JsonResponse({'message': 'Invalid session'}, status=200)
     else:
         return JsonResponse({'message': 'No sessionid cookie'}, status=200)
+
+def complete_report(request):
+    '''
+    用户结单
+    '''
+    sessionid = request.COOKIES.get('sessionid')
+    
+    if sessionid:
+        try:
+            session = Session.objects.get(session_key=sessionid)
+            session_data = session.get_decoded()
+            if session.expire_date > timezone.now():
+                # api验证通过后，获取请求消息体中的内容
+                user = get_user_from_sessionid(sessionid=sessionid)
+                data = json.loads(request.body)
+                reportId = data['reportId']
+
+                try:
+                    report = call_report_table.objects.get(id=reportId)
+                    if report.completeState:
+                        return JsonResponse({'message': 'This report is completed'}, status=200)
+                    
+                    report.completeState = True
+                    report.save()
+                    return JsonResponse({'message': 'Success'}, status=200)
+                except:
+                    return JsonResponse({'message': 'This report is no exist'}, status=200)
+
+            else:
+                return JsonResponse({'message': 'Session has expired'}, status=200)
+        except Session.DoesNotExist:
+            return JsonResponse({'message': 'Invalid session'}, status=200)
+    else:
+        return JsonResponse({'message': 'No sessionid cookie'}, status=200)
