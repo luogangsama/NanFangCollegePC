@@ -12,7 +12,6 @@ from dashboard.views import assign_order
 
 
 urlpatterns = [
-    path('modifyPassword/', modifyPassword),
     path('getWeatherApiKey/', get_weather),
     path('call_report/', call_report),
     path('user_get_history_report/', user_get_history_report),
