@@ -1,0 +1,45 @@
+概述：
+    维修人员获取被分配的订单的列表的接口
+请求url：
+    https://localhost/api/dashboard/worker_get_report_list/
+请求方式：
+    GET
+响应示例：
+    sessionid成功验证且有被分配的订单：
+    {
+        'message': 'Success',
+        'report_info': [
+            {
+                'reportId': 'reportId',
+                'userPhoneNumber': 'userPhoneNumber',
+                'address': 'address',
+                'issue': 'issue',
+                'completeState': bool, # True: 已完成；False：未完成
+                'date': 'date' # 预约的时期
+            },
+            {
+                'reportId': 'reportId',
+                'userPhoneNumber': 'userPhoneNumber',
+                'address': 'address',
+                'issue': 'issue',
+                'completeState': bool, # True: 已完成；False：未完成
+                'date': 'date' # 预约的时期
+            },
+        ]
+    }, status=200
+    sessionid成功验证但没有订单：
+    {
+        'message': 'No my report'
+    }, status=200
+    sessionid过期：
+    {
+        'message': 'Session has expired'
+    }
+    sessionid不存在：
+    {
+        'message': 'Invalid session'
+    }
+    未携带cookies：
+    {
+        'message': 'No sessionid cookie'
+    }

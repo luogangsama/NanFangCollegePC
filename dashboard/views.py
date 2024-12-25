@@ -36,6 +36,7 @@ def get_user_from_sessionid(sessionid):
 
 def get_user_info(request):
     '''
+    获取用户信息，验证cookies可用后返回用户名
     
     '''
     sessionid = request.COOKIES.get('sessionid')
@@ -155,6 +156,40 @@ def user_get_history_report(request):
                     })
 
                 return JsonResponse(return_report_info, status=200)
+            else:
+                return JsonResponse({'message': 'Session has expired'}, status=200)
+        except Session.DoesNotExist:
+            return JsonResponse({'message': 'Invalid session'}, status=200)
+    else:
+        return JsonResponse({'message': 'No sessionid cookie'}, status=200)
+
+def worker_get_report_list(request):
+    '''
+    获取维修员的历史订单
+    '''
+    sessionid = request.COOKIES.get('sessionid')
+    
+    if sessionid:
+        try:
+            session = Session.objects.get(session_key=sessionid)
+            if session.expire_date > timezone.now():
+                reports = []
+                my_reports = call_report_table.objects.filter(workerName=get_user_from_sessionid(sessionid=sessionid))
+                if len(my_reports) == 0:
+                    return JsonResponse({'message': 'No my report'}, status=200)
+                for report in my_reports:
+                    reports.append({
+                        'reportId': report.id,
+                        'userPhoneNumber': report.userPhoneNumber,
+                        'address': report.address,
+                        'issue': report.issue,
+                        'completeState': report.completeState,
+                        'date': report.date
+                    })
+                return JsonResponse({
+                    'message': 'Success',
+                    'report_info': reports
+                }, status=200)
             else:
                 return JsonResponse({'message': 'Session has expired'}, status=200)
         except Session.DoesNotExist:
