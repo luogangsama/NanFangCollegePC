@@ -204,18 +204,11 @@ def save_user_info(request):
                     user = User.objects.get(username=get_user_from_sessionid(sessionid=sessionid).username)
                     user.username = new_name
                     user.save()
+
                     # 然后根据新user去更改phone number
-                    try:
-                        # 首先判断是否先前保存了phone number，有则修改现有数据行
-                        userProfile = UserProfile.objects.get(user=user)
-                        userProfile.phoneNumber = new_phone_number
-                        userProfile.save()
-                    except UserProfile.DoesNotExist:
-                        # 先前并为保存phone number，就新增一行数据
-                        UserProfile.objects.create(
-                            user=user,
-                            phoneNumber=new_phone_number
-                        )
+                    userProfile = UserProfile.objects.get(user=user)
+                    userProfile.phoneNumber = new_phone_number
+                    # userProfile.save()
                 # 登出再登入（刷新sessionid）
                 logout(request=request)
                 login(request=request, user=user)
