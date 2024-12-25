@@ -1,0 +1,26 @@
+概述：
+    获取用户信息
+请求url：
+    https://localhost/api/dashboard/get_user_info/
+请求方式：
+    GET
+参数：
+    无
+响应示例：
+    sessionid成功验证：
+    {
+        'message': 'Success',
+        'username': 'username'
+    }
+    sessionid过期：
+    {
+        'message': 'Session has expired'
+    }
+    sessionid不存在：
+    {
+        'message': 'Invalid session'
+    }
+    无cookies:
+    {
+        'message': 'No sessionid cookie'
+    }

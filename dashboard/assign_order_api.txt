@@ -1,0 +1,47 @@
+概述：
+    分配订单的接口
+请求url：
+    https://localhost/api/dashboard/assign_order/
+请求方式：
+    POST
+参数：
+    reportId, workerName
+输入示例:
+    {
+        'reportId': '555',
+        'workerName': 'test'
+    }
+响应示例：
+    sessionid成功验证：
+    分配成功：
+    {
+        'message': 'Success'
+    }
+    权限错误：
+    {
+        'message': 'Permission error'
+    }
+    被分配者不存在：
+    {
+        'message': 'This worker is no exist'
+    }
+    该订单已被分配：
+    {
+        'message': 'This report is allocated'
+    }
+    该订单不存在：
+    {
+        'message': 'This report is no exist'
+    }
+    sessionid过期：
+    {
+        'message': 'Session has expired'
+    }
+    sessionid不存在：
+    {
+        'message': 'Invalid session'
+    }
+    未携带cookies：
+    {
+        'message': 'No sessionid cookie'
+    }

@@ -34,8 +34,28 @@ def get_user_from_sessionid(sessionid):
     except User.DoesNotExist:
         return None  # 用户不存在
 
-def modifyPassword(request):
-    pass
+def get_user_info(request):
+    '''
+    
+    '''
+    sessionid = request.COOKIES.get('sessionid')
+    
+    if sessionid:
+        try:
+            session = Session.objects.get(session_key=sessionid)
+            if session.expire_date > timezone.now():
+                user = get_user_from_sessionid(sessionid=sessionid)
+                return JsonResponse({
+                    'message': 'Success',
+                    'username': user.username
+                })
+            else:
+                return JsonResponse({'message': 'Session has expired'}, status=200)
+        except Session.DoesNotExist:
+            return JsonResponse({'message': 'Invalid session'}, status=200)
+    else:
+        return JsonResponse({'message': 'No sessionid cookie'}, status=200)
+
 
 def get_weather(request):
     '''
@@ -294,7 +314,7 @@ def assign_order(request):
                 data = json.loads(request.body)
 
                 try:
-                    worker_name = data['worker_name']
+                    worker_name = data['workerName']
                     worker = User.objects.get(username=worker_name)
                     if worker.last_name not in ['worker', 'admin']:
                         # 权限不符合
