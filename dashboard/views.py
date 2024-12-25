@@ -123,7 +123,7 @@ def user_get_history_report(request):
                     allocationState = report_info.allocationState
                     completeState = report_info.completeState
                     date = report_info.date # 预约时间
-                    report_id = report_info.ID
+                    report_id = report_info.id
 
                     return_report_info['report_info'].append({
                         'reportId': report_id,
