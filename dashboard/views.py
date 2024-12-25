@@ -297,11 +297,32 @@ def assign_order(request):
                 user = get_user_from_sessionid(sessionid=sessionid)
                 if user.last_name != 'admin':
                     # 权限不符合
-                    return JsonResponse({'message': 'Permission error'})
+                    return JsonResponse({'message': 'Permission error'}, status=200)
                 data = json.loads(request.body)
-                worker = data['worker_name']
 
+                try:
+                    worker_name = data['worker_name']
+                    worker = User.objects.get(username=worker_name)
+                    if worker.last_name not in ['worker', 'admin']:
+                        # 权限不符合
+                        return JsonResponse({'message': 'Permission error'}, status=200)
+                except User.DoesNotExist:
+                    return JsonResponse({'message': 'This worker is no exist'}, status=200)
 
+                try:
+                    report_id = data['reportId']
+                    report = call_report_table.objects.get(id=int(report_id))
+                    if report.allocationState:
+                        # 订单已被分配
+                        return JsonResponse({'message': 'This report is allocated'}, status=200)
+                    # 向订单表中填入相关信息并改变状态
+                    report.workerName = worker
+                    report.workerPhoneNumber = worker.phoneNumber
+                    report.allocationState = True
+
+                    return JsonResponse({'message': 'Success'}, status=200)
+                except:
+                    return JsonResponse({'message': 'This report is no exist'}, status=200)
             else:
                 return JsonResponse({'message': 'Session has expired'}, status=200)
         except Session.DoesNotExist:
