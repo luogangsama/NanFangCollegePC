@@ -208,7 +208,7 @@ def save_user_info(request):
                     # 然后根据新user去更改phone number
                     userProfile = UserProfile.objects.get(user=user)
                     userProfile.phoneNumber = new_phone_number
-                    # userProfile.save()
+                    userProfile.save()
                 # 登出再登入（刷新sessionid）
                 logout(request=request)
                 login(request=request, user=user)
