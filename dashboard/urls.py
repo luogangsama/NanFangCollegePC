@@ -11,6 +11,7 @@ from dashboard.views import renew_password
 from dashboard.views import get_user_info
 from dashboard.views import assign_order
 from dashboard.views import complete_report
+from dashboard.views import cannell_report
 
 
 urlpatterns = [
@@ -26,4 +27,5 @@ urlpatterns = [
     path('get_user_info/', get_user_info),
     path('assign_order/', assign_order),
     path('complete_report/', complete_report),
+    path('cannell_report/', cannell_report),
 ]
