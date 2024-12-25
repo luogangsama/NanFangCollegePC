@@ -7,6 +7,7 @@ from common.models import call_report_table
 from common.models import UserProfile
 from django.contrib.auth.models import User
 from django.contrib.auth import logout, login
+from django.contrib.auth.hashers import check_password
 import hashlib
 import json
 
@@ -238,6 +239,40 @@ def get_phone_number(request):
                     return JsonResponse({'message': 'Success', 'phoneNumber': phoneNumber}, status=200)
                 except User.DoesNotExist:
                     return JsonResponse({'message': 'No phone number'}, status=200)
+            else:
+                return JsonResponse({'message': 'Session has expired'}, status=200)
+        except Session.DoesNotExist:
+            return JsonResponse({'message': 'Invalid session'}, status=200)
+    else:
+        return JsonResponse({'message': 'No sessionid cookie'}, status=200)
+
+def renew_password(request):
+    '''
+    修改密码
+    '''
+    sessionid = request.COOKIES.get('sessionid')
+    
+    if sessionid:
+        try:
+            session = Session.objects.get(session_key=sessionid)
+            session_data = session.get_decoded()
+            if session.expire_date > timezone.now():
+                # api验证通过后，获取请求消息体中的内容
+                user = get_user_from_sessionid(sessionid=sessionid)
+
+                data = json.loads(request.body)
+                old_password = data['old_password']
+                new_password = data['new_password']
+
+                if check_password(old_password, user.password):
+                    user.set_password(new_password)
+                    user.save()
+                    logout(request=request)
+                    login(request=request, user=user)
+                    return JsonResponse({'message': 'Success'}, status=200)
+                else:
+                    return JsonResponse({'message': 'Password error'}, status=200)
+
             else:
                 return JsonResponse({'message': 'Session has expired'}, status=200)
         except Session.DoesNotExist:
