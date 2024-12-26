@@ -1,16 +1,19 @@
 概述：
-    获取天气apiKey接口
+    用户撤单api
 请求url：
-    https://localhost/api/dashboard/getWeatherApiKey/
+    https://localhost/api/dashboard/cancel_report/
 请求方式：
     GET
 参数：
-    无
+    reportId
+请求示例：
+    {
+        'reportId': 'reportId'
+    }
 响应示例：
     sessionid成功验证：
     {
         'message': 'Success'
-        'apiKey': 'your_apiKey'
     }
     sessionid过期：
     {
