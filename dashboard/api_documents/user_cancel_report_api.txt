@@ -3,7 +3,7 @@
 请求url：
     https://localhost/api/dashboard/cancel_report/
 请求方式：
-    GET
+    POST
 参数：
     reportId
 请求示例：
