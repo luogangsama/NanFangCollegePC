@@ -143,7 +143,7 @@ def user_get_history_report(request):
                     userPhoneNumber = report_info.userPhoneNumber
                     address = report_info.address
                     issue = report_info.issue
-                    status = report_info.stauts
+                    status = report_info.status
                     date = report_info.date # 预约时间
                     call_date = report_info.call_date
                     report_id = report_info.id
