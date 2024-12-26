@@ -362,7 +362,7 @@ def assign_order(request):
 
                 try:
                     report_id = data['reportId']
-                    report = call_report_table.objects.get(id=int(report_id))
+                    report = call_report_table.objects.get(pk=report_id)
                     if report.allocationState:
                         # 订单已被分配
                         return JsonResponse({'message': 'This report is allocated'}, status=200)
@@ -398,8 +398,8 @@ def complete_report(request):
                 reportId = data['reportId']
 
                 try:
-                    report = call_report_table.objects.get(id=reportId)
-                    if report.completeState:
+                    report = call_report_table.objects.get(pk=reportId)
+                    if report.status == '1':
                         return JsonResponse({'message': 'This report is completed'}, status=200)
                     
                     report.status = '2'
