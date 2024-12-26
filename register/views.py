@@ -31,7 +31,8 @@ def register(request):
                     last_name='customer'
                 )
                 UserProfile.objects.create(
-                    user=record # 在用户信息表中初始化一行
+                    user=record, # 在用户信息表中初始化一行
+                    phoneNumber='None'
                 )
                 record.set_password(password)
                 record.save()

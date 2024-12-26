@@ -289,6 +289,8 @@ def get_phone_number(request):
                 try:
                     user = get_user_from_sessionid(sessionid=sessionid)
                     phoneNumber = UserProfile.objects.get(user=user).phoneNumber
+                    if phoneNumber == 'None':
+                        return JsonResponse({'message': 'No phone number'}, status=200)
                     return JsonResponse({'message': 'Success', 'phoneNumber': phoneNumber}, status=200)
                 except User.DoesNotExist:
                     return JsonResponse({'message': 'No phone number'}, status=200)
