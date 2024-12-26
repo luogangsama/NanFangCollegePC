@@ -96,13 +96,15 @@ def call_report(request):
                 address = data['address']
                 issue = data['issue']
                 date = data['date']
+                call_date = data['call_date'] # 订单提交的时间
 
                 call_report_table.objects.create(
                     user=user,
                     userPhoneNumber=userPhoneNumber,
                     address=address,
                     issue=issue,
-                    date=date
+                    date=date,
+                    call_date=call_date
                 )
                 return JsonResponse({'message': 'Success', 'orderDetails': '订单提交成功'}, status=200)
             else:
@@ -141,9 +143,9 @@ def user_get_history_report(request):
                     userPhoneNumber = report_info.userPhoneNumber
                     address = report_info.address
                     issue = report_info.issue
-                    allocationState = report_info.allocationState
-                    completeState = report_info.completeState
+                    status = report_info.stauts
                     date = report_info.date # 预约时间
+                    call_date = report_info.call_date
                     report_id = report_info.id
 
                     return_report_info['report_info'].append({
@@ -151,8 +153,9 @@ def user_get_history_report(request):
                         'userPhoneNumber': userPhoneNumber,
                         'address': address,
                         'issue': issue,
-                        'allocationState': allocationState,
-                        'date': date
+                        'status': status,
+                        'date': date,
+                        'call_date': call_date
                     })
 
                 return JsonResponse(return_report_info, status=200)
@@ -183,7 +186,7 @@ def worker_get_report_list(request):
                         'userPhoneNumber': report.userPhoneNumber,
                         'address': report.address,
                         'issue': report.issue,
-                        'completeState': report.completeState,
+                        'status': report.status,
                         'date': report.date
                     })
                 return JsonResponse({
@@ -366,7 +369,7 @@ def assign_order(request):
                     # 向订单表中填入相关信息并改变状态
                     report.workerName = worker
                     report.workerPhoneNumber = worker.phoneNumber
-                    report.allocationState = True
+                    report.stauts = '1'
 
                     return JsonResponse({'message': 'Success'}, status=200)
                 except:
@@ -399,7 +402,7 @@ def complete_report(request):
                     if report.completeState:
                         return JsonResponse({'message': 'This report is completed'}, status=200)
                     
-                    report.completeState = True
+                    report.status = '2'
                     report.save()
                     return JsonResponse({'message': 'Success'}, status=200)
                 except:
@@ -412,7 +415,7 @@ def complete_report(request):
     else:
         return JsonResponse({'message': 'No sessionid cookie'}, status=200)
 
-def cannell_report(request):
+def cancel_report(request):
     '''
     用户撤销报单
     '''
@@ -429,10 +432,8 @@ def cannell_report(request):
 
                 try:
                     report = call_report_table.objects.get(id=reportId)
-                    '''
-
-
-                    '''
+                    report.status = '3'
+                    report.save()
                     return JsonResponse({'message': 'Success'}, status=200)
                 except:
                     return JsonResponse({'message': 'This report is no exist'}, status=200)

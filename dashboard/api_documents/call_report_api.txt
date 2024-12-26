@@ -5,13 +5,14 @@
 请求方式：
     POST
 参数：
-    userPhoneNumber, address
+    userPhoneNumber, address, call_date(订单提交时间)
 输入示例:
     {
         'userPhoneNumber': '12345678901',
         'address': 'tokyo'
         'issue': 'your_issue',
-        'date': '2024/12/21'
+        'date': '2024/12/21',
+        'call_date': '2024/12/20'
     }
 响应示例：
     sessionid成功验证：

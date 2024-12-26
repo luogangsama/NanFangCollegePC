@@ -29,11 +29,10 @@ class call_report_table(models.Model):
     issue = models.CharField(max_length=200)
     # 期待上门时间
     date = models.CharField(max_length=20)
-
-    # 订单分配状态：0: 未分配; 1: 已分配
-    allocationState = models.BooleanField(default=False)
-    # 订单完成状态：0: 未完成; 1: 已完成
-    completeState = models.BooleanField(default=False)
+    # 订单提交时间
+    call_date = models.CharField(max_length=20)
+    # 订单状态
+    status = models.CharField(max_length=1, default='0')
 
     # 维修人员手机号码
     workerPhoneNumber = models.CharField(max_length=11)

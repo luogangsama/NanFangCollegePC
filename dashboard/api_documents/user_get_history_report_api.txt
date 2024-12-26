@@ -14,15 +14,17 @@
                 'userPhoneNumber': 'userPhoneNumber',
                 'address': 'address',
                 'issue': 'issue',
-                'allocationState': bool, # True: 已被分配；False：未被分配
-                'date': 'date' # 预约的时期
+                'status': '0', # '0': 未分配; '1': 已分配; '2': 已完成; '3': 用户撤单
+                'date': 'date', # 预约的时期
+                'call_date': 'call_date' # 订单提交的时间
             },
             {
                 'userPhoneNumber': 'userPhoneNumber',
                 'address': 'address',
                 'issue': 'issue',
-                'allocationState': bool, # True: 已被分配；False：未被分配
-                'date': 'date' # 预约的时期
+                'status': '0', # '0': 未分配; '1': 已分配; '2': 已完成; '3': 用户撤单
+                'date': 'date', # 预约的时期
+                'call_date': 'call_date' # 订单提交的时间
             },
         ]
     }, status=200
