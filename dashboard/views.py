@@ -48,7 +48,8 @@ def get_user_info(request):
                 user = get_user_from_sessionid(sessionid=sessionid)
                 return JsonResponse({
                     'message': 'Success',
-                    'username': user.username
+                    'username': user.username,
+                    'label': user.last_name
                 })
             else:
                 return JsonResponse({'message': 'Session has expired'}, status=200)

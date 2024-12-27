@@ -11,7 +11,8 @@
     {
         'message': 'Success',
         'username': 'username'
-    }
+        'label': 'customer' # customer: 普通用户; worker: 维修人员; admin: 管理员
+    }                       #报修界面中普通用户只有报修界面，维修人员有查看属于自己的订单界面同时有报修界面，管理员比维修人员多一个分配订单的界面
     sessionid过期：
     {
         'message': 'Session has expired'
