@@ -14,7 +14,7 @@ def store_verification_code(email, code, timeout=300):
     cache.set(f"verification_code_{email}", code, timeout)
 
 def send_verification_email(request):
-    email = request.GET.get('email')  # 获取用户提交的邮箱
+    email = request.POST.get('email')  # 获取用户提交的邮箱
     if not email:
         return JsonResponse({'message': '邮箱不能为空'}, status=200)
     
