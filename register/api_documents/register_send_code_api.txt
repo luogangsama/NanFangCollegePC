@@ -1,0 +1,25 @@
+概述：
+    注册前验证邮箱是否有效
+请求url：
+    https://localhost/api/users/register_send_code/
+请求方式：
+    POST
+参数：
+    email
+输入示例:
+    {
+        'email': 'xxx@email.com'
+    }
+响应示例：
+    成功验证：
+    {
+        'message': 验证码已发送'
+    }
+    缺项：
+    {
+        'message': '邮箱不能为空'
+    }
+    发送失败：
+    {
+        'message': '发送失败'
+    }

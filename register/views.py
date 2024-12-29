@@ -14,13 +14,27 @@ def Response(message:str, method:str):
     response['Access-Control-Allow-Headers'] = 'Content-Type'
     return response
 
+from SMS.views import send_verification_email, verify_code
+def register_send_code(request):
+    '''
+    注册时向邮箱发送验证码
+    '''
+    send_verification_email(request)
+
+
 def register(request):
+    '''
+    注册
+    '''
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
             username = data['name']
             password = data['password']
             email = data['email']
+            
+            # 判断验证码是否有效
+            verify_code(request)
 
             try:
                 user = User.objects.get(username=username)

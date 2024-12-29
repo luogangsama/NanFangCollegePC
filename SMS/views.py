@@ -1,6 +1,11 @@
 from django.shortcuts import render
 from django.core.mail import send_mail
 from django.core.cache import cache
+import random
+
+def generate_verification_code(length=6):
+    """生成随机验证码"""
+    return ''.join(random.choices('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', k=length))
 
 # Create your views here.
 def store_verification_code(email, code, timeout=300):
