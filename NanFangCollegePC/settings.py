@@ -138,10 +138,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # SESSION_SAVE_EVERY_REQUEST = True # 每次请求都刷新会话的过期时间
 
 # 发送邮箱验证码
+EMAIL_USE_SSL = True
 EMAIL_HOST = "smtp.qq.com" # 服务器
-EMAIL_PORT = 25
+EMAIL_PORT = 465
 EMAIL_HOST_USER = '3070845578@qq.com'
-EMAIL_HOST_PASSWORD = 'vamnqikdayqhdfib'
-EMAIL_USE_TLS = True
 EMAIL_FROM = '3070845578@qq.com'
-email_title = '邮箱激活'
+with open("/root/code.txt", 'r') as f:
+    EMAIL_HOST_PASSWORD = f.readline()
+    EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD[0: -1]

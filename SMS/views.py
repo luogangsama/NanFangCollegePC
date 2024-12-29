@@ -31,9 +31,10 @@ def send_verification_email(request):
     subject = '您的验证码'
     message = f'您的验证码是：{code}，有效期为5分钟。'
     try:
-        send_mail(subject, message, EMAIL_FROM, [email])
+        status = send_mail(subject, message, EMAIL_FROM, [email], fail_silently=False)
         return JsonResponse({'message': '验证码已发送'}, status=200)
     except Exception as e:
+        print(e)
         return JsonResponse({'message': '发送失败'}, status=200)
 
 def verify_code(request) -> bool:
