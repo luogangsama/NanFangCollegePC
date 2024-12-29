@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.core.mail import send_mail
 from django.core.cache import cache
+from django.http import JsonResponse
 import random
 
 def generate_verification_code(length=6):
