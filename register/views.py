@@ -19,7 +19,7 @@ def register_send_code(request):
     '''
     注册时向邮箱发送验证码
     '''
-    send_verification_email(request)
+    return send_verification_email(request)
 
 
 def register(request):
