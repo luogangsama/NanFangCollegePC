@@ -37,8 +37,11 @@ def send_verification_email(request):
         return JsonResponse({'message': '发送失败'}, status=200)
 
 def verify_code(request) -> bool:
-    email = request.POST.get('email')
-    input_code = request.POST.get('code')
+    # email = request.POST.get('email')
+    # input_code = request.POST.get('code')
+    data = json.loads(request.body)
+    email = data['email']
+    input_code = data['code']
     
     if not email or not input_code:
         return JsonResponse({'message': '邮箱和验证码不能为空'}, status=200)
