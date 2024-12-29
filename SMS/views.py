@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.core.mail import send_mail
 from django.core.cache import cache
 from django.http import JsonResponse
+from NanFangCollegePC.settings import EMAIL_FROM
 import random
 import json
 
