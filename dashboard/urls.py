@@ -28,4 +28,5 @@ urlpatterns = [
     path('assign_order/', assign_order),
     path('complete_report/', complete_report),
     path('cancel_report/', cancel_report),
+
 ]

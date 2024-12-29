@@ -447,4 +447,3 @@ def cancel_report(request):
             return JsonResponse({'message': 'Invalid session'}, status=200)
     else:
         return JsonResponse({'message': 'No sessionid cookie'}, status=200)
-    

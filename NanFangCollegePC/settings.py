@@ -136,3 +136,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # SESSION_COOKIE_SECURE = False     # 如果启用 HTTPS，则设为 True
 # SESSION_COOKIE_HTTPONLY = True    # 禁止 JavaScript 访问 Cookie
 # SESSION_SAVE_EVERY_REQUEST = True # 每次请求都刷新会话的过期时间
+
+# 发送邮箱验证码
+EMAIL_HOST = "smtp.qq.com" # 服务器
+EMAIL_PORT = 25
+EMAIL_HOST_USER = '3070845578@qq.com'
+EMAIL_HOST_PASSWORD = 'abahptaupxjedehj'
+EMAIL_USE_TLS = True
+EMAIL_FROM = '3070845578@qq.com'
+email_title = '邮箱激活'

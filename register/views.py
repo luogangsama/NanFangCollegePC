@@ -20,6 +20,7 @@ def register(request):
             data = json.loads(request.body)
             username = data['name']
             password = data['password']
+            email = data['email']
 
             try:
                 user = User.objects.get(username=username)
@@ -28,7 +29,8 @@ def register(request):
             except:
                 record = User.objects.create(
                     username=username,
-                    last_name='customer'
+                    last_name='customer',
+                    email=email
                 )
                 UserProfile.objects.create(
                     user=record, # 在用户信息表中初始化一行

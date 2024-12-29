@@ -21,6 +21,9 @@ def Response(message:str, method:str):
 
 
 def signin(request):
+    '''
+    登录
+    '''
     if request.method == 'POST':
         data = json.loads(request.body)
         username = data['name']
@@ -40,6 +43,9 @@ def signin(request):
             return response
 
 def auto_login(request):
+    '''
+    验证sessionid后自动登录
+    '''
     sessionid = request.COOKIES.get('sessionid')
     
     if sessionid:
@@ -55,3 +61,31 @@ def auto_login(request):
             return JsonResponse({'message': 'Invalid session'}, status=200)
     else:
         return JsonResponse({'message': 'No sessionid cookie'}, status=200)
+
+from SMS.views import verify_code, send_verification_email
+def forget_password_send_code(request):
+    '''
+    忘记密码界面发送sms_code
+    '''
+    send_verification_email(request)
+
+
+def forget_password(request):
+    '''
+    忘记密码后重置密码
+    '''
+    if verify_code(request):
+        # 验证通过
+        try:
+            data = json.loads(request.body)
+            email = data['email']
+            new_password = data['new_password']
+            user = User.objects.get(email=email)
+            user.set_password(new_password)
+            user.save()
+
+            return JsonResponse({'message': '密码修改成功'})
+
+        except User.DoesNotExist:
+            return JsonResponse({'message': '该账号未注册'}, status=200)
+
