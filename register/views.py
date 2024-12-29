@@ -32,6 +32,13 @@ def register(request):
             username = data['name']
             password = data['password']
             email = data['email']
+
+            # 确保一个邮箱一个账号
+            try:
+                user = User.objects.get(email=email)
+                return JsonResponse({'message': '邮箱已被注册'}, status=200)
+            except:
+                pass
             
             # 判断验证码是否有效
             verify_code(request)
