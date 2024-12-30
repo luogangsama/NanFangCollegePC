@@ -381,7 +381,7 @@ def assign_order(request):
                     report.stauts = '1'
 
                     return JsonResponse({'message': 'Success'}, status=200)
-                except:
+                except call_report_table.DoesNotExist:
                     return JsonResponse({'message': 'This report is no exist'}, status=200)
             else:
                 return JsonResponse({'message': 'Session has expired'}, status=200)
