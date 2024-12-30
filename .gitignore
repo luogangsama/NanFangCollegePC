@@ -1,2 +1,4 @@
 /venv/
 start.sh
+db.sqlite3
+*.sqlite3
