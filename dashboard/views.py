@@ -567,7 +567,7 @@ def get_report_of_same_day(request):
                     }
 
                 for report in reports:
-                    if report.workerName.username:
+                    if report.workerName:
                         workerName = report.workerName.username
                     else:
                         workerName = 'None'
