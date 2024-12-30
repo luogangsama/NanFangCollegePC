@@ -378,7 +378,7 @@ def assign_order(request):
                     # 向订单表中填入相关信息并改变状态
                     report.workerName = worker
                     report.workerPhoneNumber = UserProfile.objects.get(user=worker).phoneNumber
-                    report.stauts = '1'
+                    report.status = '1'
                     report.save()
 
                     return JsonResponse({'message': 'Success'}, status=200)
