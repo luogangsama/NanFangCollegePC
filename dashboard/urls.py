@@ -12,6 +12,8 @@ from dashboard.views import get_user_info
 from dashboard.views import assign_order
 from dashboard.views import complete_report
 from dashboard.views import cancel_report
+from dashboard.views import reset_email_send_code
+from dashboard.views import reset_email
 
 
 urlpatterns = [
@@ -28,5 +30,7 @@ urlpatterns = [
     path('assign_order/', assign_order),
     path('complete_report/', complete_report),
     path('cancel_report/', cancel_report),
+    path('reset_email_send_code/', reset_email_send_code),
+    path('reset_email/', reset_email),
 
 ]
