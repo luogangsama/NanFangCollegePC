@@ -371,9 +371,8 @@ def assign_order(request):
 
                 try:
                     report_id = int(data['reportId'])
-                    report = call_report_table.objects.get(pk=report_id)
-                    print(type(report.allocationState))
-                    if report.allocationState != 0:
+                    report = call_report_table.objects.get(id=report_id)
+                    if report.status != '0':
                         # 订单已被分配
                         return JsonResponse({'message': 'This report is allocated'}, status=200)
                     # 向订单表中填入相关信息并改变状态
