@@ -370,7 +370,7 @@ def assign_order(request):
                     return JsonResponse({'message': 'This worker is no exist'}, status=200)
 
                 try:
-                    report_id = data['reportId']
+                    report_id = int(data['reportId'])
                     report = call_report_table.objects.get(pk=report_id)
                     if report.allocationState:
                         # 订单已被分配
@@ -404,7 +404,7 @@ def complete_report(request):
                 # api验证通过后，获取请求消息体中的内容
                 user = get_user_from_sessionid(sessionid=sessionid)
                 data = json.loads(request.body)
-                reportId = data['reportId']
+                reportId = int(data['reportId'])
 
                 try:
                     report = call_report_table.objects.get(pk=reportId)
@@ -437,7 +437,7 @@ def cancel_report(request):
                 # api验证通过后，获取请求消息体中的内容
                 user = get_user_from_sessionid(sessionid=sessionid)
                 data = json.loads(request.body)
-                reportId = data['reportId']
+                reportId = int(data['reportId'])
 
                 try:
                     report = call_report_table.objects.get(id=reportId)
