@@ -11,6 +11,10 @@ from django.contrib.auth.hashers import check_password
 import hashlib
 import json
 
+
+from SMS.views import send_verification_email
+from SMS.views import verify_code
+
 # Create your views here.
 def get_user_from_sessionid(sessionid):
     try:
@@ -440,6 +444,58 @@ def cancel_report(request):
                     return JsonResponse({'message': 'Success'}, status=200)
                 except:
                     return JsonResponse({'message': 'This report is no exist'}, status=200)
+
+            else:
+                return JsonResponse({'message': 'Session has expired'}, status=200)
+        except Session.DoesNotExist:
+            return JsonResponse({'message': 'Invalid session'}, status=200)
+    else:
+        return JsonResponse({'message': 'No sessionid cookie'}, status=200)
+
+def reset_email_send_code(request):
+    '''
+    更改邮箱时发送验证码
+    '''
+    if sessionid:
+        try:
+            session = Session.objects.get(session_key=sessionid)
+            session_data = session.get_decoded()
+            if session.expire_date > timezone.now():
+                # api验证通过后，获取请求消息体中的内容
+                user = get_user_from_sessionid(sessionid=sessionid)
+                old_email = user.email
+                # 向用户注册账户时绑定的邮箱发送验证码
+                return send_verification_email(old_email)
+
+            else:
+                return JsonResponse({'message': 'Session has expired'}, status=200)
+        except Session.DoesNotExist:
+            return JsonResponse({'message': 'Invalid session'}, status=200)
+    else:
+        return JsonResponse({'message': 'No sessionid cookie'}, status=200)
+
+def reset_email(request):
+    '''
+    验证邮箱验证码后修改用户的邮箱
+    '''
+    if sessionid:
+        try:
+            session = Session.objects.get(session_key=sessionid)
+            session_data = session.get_decoded()
+            if session.expire_date > timezone.now():
+                # api验证通过后，获取请求消息体中的内容
+                user = get_user_from_sessionid(sessionid=sessionid)
+                old_email = user.email
+                code = json.loads(request.body)['code']
+                status = verify_code(old_email, code)
+                if status == True:
+                    new_email = json.loads(request.body)['new_email']
+                    user.email = new_email
+                    user.save()
+
+                    return JsonResponse({'message': 'Success'})
+                else:
+                    return status
 
             else:
                 return JsonResponse({'message': 'Session has expired'}, status=200)

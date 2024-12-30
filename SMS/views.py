@@ -15,9 +15,7 @@ def store_verification_code(email, code, timeout=300):
     """将验证码存储到缓存中"""
     cache.set(f"verification_code_{email}", code, timeout)
 
-def send_verification_email(request):
-    email = json.loads(request.body)['email']
-    print(email)
+def send_verification_email(email):
     if not email:
         return JsonResponse({'message': '邮箱不能为空'}, status=200)
     
@@ -37,13 +35,7 @@ def send_verification_email(request):
         print(e)
         return JsonResponse({'message': '发送失败'}, status=200)
 
-def verify_code(request) -> bool:
-    # email = request.POST.get('email')
-    # input_code = request.POST.get('code')
-    data = json.loads(request.body)
-    email = data['email']
-    input_code = data['code']
-    
+def verify_code(email, input_code) -> bool:
     if not email or not input_code:
         return JsonResponse({'message': '邮箱和验证码不能为空'}, status=200)
     

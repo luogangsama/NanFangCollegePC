@@ -19,7 +19,8 @@ def register_send_code(request):
     '''
     注册时向邮箱发送验证码
     '''
-    return send_verification_email(request)
+    email = json.loads(request.body)['email']
+    return send_verification_email(email)
 
 
 def register(request):
@@ -32,6 +33,7 @@ def register(request):
             username = data['name']
             password = data['password']
             email = data['email']
+            code = data['code']
 
             # 确保一个邮箱一个账号
             try:
@@ -41,7 +43,10 @@ def register(request):
                 pass
             
             # 判断验证码是否有效
-            verify_code(request)
+            status = verify_code(email, code)
+            if status != True:
+                return status
+
 
             try:
                 user = User.objects.get(username=username)

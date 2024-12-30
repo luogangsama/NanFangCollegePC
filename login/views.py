@@ -67,18 +67,21 @@ def forget_password_send_code(request):
     '''
     忘记密码界面发送sms_code
     '''
-    send_verification_email(request)
+    email = json.loads(request.body)['email']
+    return send_verification_email(email)
 
 
 def forget_password(request):
     '''
     忘记密码后重置密码
     '''
-    if verify_code(request):
+    data = json.loads(request.body)
+    email = data['email']
+    code = data['code']
+    status = verify_code(email, code)
+    if status == True:
         # 验证通过
         try:
-            data = json.loads(request.body)
-            email = data['email']
             new_password = data['new_password']
             user = User.objects.get(email=email)
             user.set_password(new_password)
@@ -88,4 +91,5 @@ def forget_password(request):
 
         except User.DoesNotExist:
             return JsonResponse({'message': '该账号未注册'}, status=200)
-
+    else:
+        return status
