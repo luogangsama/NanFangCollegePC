@@ -143,7 +143,7 @@ EMAIL_HOST = "smtp.qq.com" # 服务器
 EMAIL_PORT = 465
 EMAIL_HOST_USER = '3070845578@qq.com'
 EMAIL_FROM = '3070845578@qq.com'
-with open("/root/code.txt", 'r') as f:
-    EMAIL_HOST_PASSWORD = f.readline()
-    EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD[0: -1]
-# EMAIL_HOST_PASSWORD = ''
+# with open("/root/code.txt", 'r') as f:
+#     EMAIL_HOST_PASSWORD = f.readline()
+#     EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD[0: -1]
+EMAIL_HOST_PASSWORD = ''

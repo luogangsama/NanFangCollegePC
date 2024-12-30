@@ -8,7 +8,7 @@ import json
 
 def generate_verification_code(length=6):
     """生成随机验证码"""
-    return ''.join(random.choices('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', k=length))
+    return ''.join(random.choices('0123456789', k=length))
 
 # Create your views here.
 def store_verification_code(email, code, timeout=300):
