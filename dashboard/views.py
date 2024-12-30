@@ -192,7 +192,8 @@ def worker_get_report_list(request):
                         'address': report.address,
                         'issue': report.issue,
                         'status': report.status,
-                        'date': report.date
+                        'date': report.date,
+                        'call_date': report.call_date
                     })
                 return JsonResponse({
                     'message': 'Success',

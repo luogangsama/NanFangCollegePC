@@ -15,7 +15,8 @@
                 'address': 'address',
                 'issue': 'issue',
                 'status': '0', # '0': 未分配; '1': 已分配; '2': 已完成; '3': 用户撤单
-                'date': 'date' # 预约的时期
+                'date': 'date', # 预约的时期
+                'call_date': 'date' # 订单提交的时间
             },
             {
                 'reportId': 'reportId',
@@ -23,7 +24,8 @@
                 'address': 'address',
                 'issue': 'issue',
                 'status': '0', # '0': 未分配; '1': 已分配; '2': 已完成; '3': 用户撤单
-                'date': 'date' # 预约的时期
+                'date': 'date', # 预约的时期
+                'call_date': 'date' # 订单提交的时间
             },
         ]
     }, status=200
