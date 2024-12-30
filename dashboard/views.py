@@ -567,6 +567,10 @@ def get_report_of_same_day(request):
                     }
 
                 for report in reports:
+                    if report.workerName.username:
+                        workerName = report.workerName.username
+                    else:
+                        workerName = 'None'
                     return_data['reports'].append({
                         'reportId': report.id,
                         'userPhoneNumber': report.userPhoneNumber,
@@ -575,6 +579,7 @@ def get_report_of_same_day(request):
                         'status': report.status,
                         'date': report.date,
                         'call_date': report.call_date,
+                        'workerName': workerName,
                     })
 
                 return JsonResponse(return_data, status=200)
