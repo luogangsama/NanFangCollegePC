@@ -379,6 +379,7 @@ def assign_order(request):
                     report.workerName = worker
                     report.workerPhoneNumber = UserProfile.objects.get(user=worker).phoneNumber
                     report.stauts = '1'
+                    report.save()
 
                     return JsonResponse({'message': 'Success'}, status=200)
                 except call_report_table.DoesNotExist:
