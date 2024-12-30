@@ -36,6 +36,6 @@ urlpatterns = [
     path('reset_email/', reset_email),
 
     path('today_workers/', get_staff_of_same_day),
-    path('get_report_of_same_day', get_report_of_same_day),
+    path('get_report_of_same_day/', get_report_of_same_day),
 
 ]
