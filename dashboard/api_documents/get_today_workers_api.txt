@@ -1,0 +1,37 @@
+概述：
+    获取与分单人员同一天工作的人员名单
+请求url：
+    https://localhost/api/dashboard/today_workers/
+请求方式：
+    GET
+参数：
+    无
+响应示例：
+    sessionid成功验证：
+    成功查询：
+    {
+        'message': 'Success',
+        'workers': [
+            {
+                'username': '张三'
+            },
+            {
+                'username': '李四'
+            },
+            {
+                'username': '王五'
+            }
+        ]
+    }
+    sessionid过期：
+    {
+        'message': 'Session has expired'
+    }
+    sessionid不存在：
+    {
+        'message': 'Invalid session'
+    }
+    无cookies:
+    {
+        'message': 'No sessionid cookie'
+    }

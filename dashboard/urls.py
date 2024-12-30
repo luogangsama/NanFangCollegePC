@@ -15,6 +15,8 @@ from dashboard.views import cancel_report
 from dashboard.views import reset_email_send_code
 from dashboard.views import reset_email
 
+from dashboard.views import get_staff_of_same_day
+
 
 urlpatterns = [
     path('getWeatherApiKey/', get_weather),
@@ -32,5 +34,7 @@ urlpatterns = [
     path('cancel_report/', cancel_report),
     path('reset_email_send_code/', reset_email_send_code),
     path('reset_email/', reset_email),
+
+    paht('today_workers/', get_staff_of_same_day),
 
 ]

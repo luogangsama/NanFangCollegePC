@@ -503,3 +503,34 @@ def reset_email(request):
             return JsonResponse({'message': 'Invalid session'}, status=200)
     else:
         return JsonResponse({'message': 'No sessionid cookie'}, status=200)
+
+
+def get_staff_of_same_day(reques):
+    '''
+    获取与分单人员同一天值班的人员名单
+    '''
+    if sessionid:
+        try:
+            session = Session.objects.get(session_key=sessionid)
+            session_data = session.get_decoded()
+            if session.expire_date > timezone.now():
+                # api验证通过后，获取请求消息体中的内容
+                user = get_user_from_sessionid(sessionid=sessionid)
+                staffs = UserProfile.objects.filter(
+                    dutyTime=UserProfile.objects.get(user=user).dutyTime
+                )
+                return_data = {
+                    'message': 'Success',
+                    'workers': []
+                    }
+
+                for staff in staffs:
+                    return_data['workers'].append({'username': staff.username})
+                JsonResponse(return_data, status=200)
+            else:
+                return JsonResponse({'message': 'Session has expired'}, status=200)
+        except Session.DoesNotExist:
+            return JsonResponse({'message': 'Invalid session'}, status=200)
+    else:
+        return JsonResponse({'message': 'No sessionid cookie'}, status=200)
+    _
