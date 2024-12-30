@@ -557,7 +557,7 @@ def get_report_of_same_day(request):
                 if user.last_name != 'admin':
                     return JsonResponse({'message': 'Permission error'})
 
-                today_str = datetime.today().strftime("%Y/%m/%d")
+                today_str = datetime.date.today().strftime("%Y/%m/%d")
                 reports = call_report_table.objects.filter(
                     date__startswith=today_str
                 )
