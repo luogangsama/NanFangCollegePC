@@ -575,7 +575,7 @@ def get_report_of_same_day(request):
                         'status': report.status,
                         'date': report.date,
                         'call_date': report.call_date,
-                        'workerName': report.workerName
+                        'workerName': report.workerName.username
                     })
 
                 return JsonResponse(return_data, status=200)
