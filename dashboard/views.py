@@ -458,6 +458,7 @@ def reset_email_send_code(request):
     '''
     更改邮箱时发送验证码
     '''
+    sessionid = request.COOKIES.get('sessionid')
     if sessionid:
         try:
             session = Session.objects.get(session_key=sessionid)
@@ -480,6 +481,7 @@ def reset_email(request):
     '''
     验证邮箱验证码后修改用户的邮箱
     '''
+    sessionid = request.COOKIES.get('sessionid')
     if sessionid:
         try:
             session = Session.objects.get(session_key=sessionid)
@@ -507,10 +509,11 @@ def reset_email(request):
         return JsonResponse({'message': 'No sessionid cookie'}, status=200)
 
 
-def get_staff_of_same_day(reques):
+def get_staff_of_same_day(request):
     '''
     获取与分单人员同一天值班的人员名单
     '''
+    sessionid = request.COOKIES.get('sessionid')
     if sessionid:
         try:
             session = Session.objects.get(session_key=sessionid)
@@ -542,6 +545,7 @@ def get_report_of_same_day(request):
     '''
     分单人员获取预约于当天的订单
     '''
+    sessionid = request.COOKIES.get('sessionid')
     if sessionid:
         try:
             session = Session.objects.get(session_key=sessionid)
