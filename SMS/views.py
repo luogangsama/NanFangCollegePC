@@ -36,6 +36,7 @@ def send_verification_email(email):
         return JsonResponse({'message': '发送失败'}, status=200)
 
 def verify_code(email, input_code) -> bool:
+    input_code = input_code.upper()
     if not email or not input_code:
         return JsonResponse({'message': '邮箱和验证码不能为空'}, status=200)
     
@@ -49,4 +50,3 @@ def verify_code(email, input_code) -> bool:
     
     # 验证成功返回True
     return True
-    
