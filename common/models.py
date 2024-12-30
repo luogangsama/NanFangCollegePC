@@ -13,6 +13,7 @@ class Users(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     phoneNumber = models.CharField(max_length=11)
+    dutyTime = models.CharField(max_length=1, default='0')
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
@@ -28,9 +29,9 @@ class call_report_table(models.Model):
     # 问题
     issue = models.CharField(max_length=200)
     # 期待上门时间
-    date = models.CharField(max_length=20)
+    date = models.CharField(max_length=50)
     # 订单提交时间
-    call_date = models.CharField(max_length=20)
+    call_date = models.CharField(max_length=50)
     # 订单状态
     status = models.CharField(max_length=1, default='0')
 
