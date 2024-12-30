@@ -377,7 +377,7 @@ def assign_order(request):
                         return JsonResponse({'message': 'This report is allocated'}, status=200)
                     # 向订单表中填入相关信息并改变状态
                     report.workerName = worker
-                    report.workerPhoneNumber = worker.user.phoneNumber
+                    report.workerPhoneNumber = UserProfile.objects.get(user=worker).phoneNumber
                     report.stauts = '1'
 
                     return JsonResponse({'message': 'Success'}, status=200)
