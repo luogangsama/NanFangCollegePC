@@ -540,7 +540,6 @@ def get_staff_of_same_day(request):
         return JsonResponse({'message': 'No sessionid cookie'}, status=200)
    
 
-
 def get_report_of_same_day(request):
     '''
     分单人员获取预约于当天的订单
