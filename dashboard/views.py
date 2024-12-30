@@ -10,6 +10,7 @@ from django.contrib.auth import logout, login
 from django.contrib.auth.hashers import check_password
 import hashlib
 import json
+import datetime
 
 
 from SMS.views import send_verification_email
@@ -534,4 +535,50 @@ def get_staff_of_same_day(reques):
             return JsonResponse({'message': 'Invalid session'}, status=200)
     else:
         return JsonResponse({'message': 'No sessionid cookie'}, status=200)
-    _
+   
+
+
+def get_report_of_same_day(request):
+    '''
+    分单人员获取预约于当天的订单
+    '''
+    if sessionid:
+        try:
+            session = Session.objects.get(session_key=sessionid)
+            session_data = session.get_decoded()
+            if session.expire_date > timezone.now():
+                # api验证通过后，获取请求消息体中的内容
+                user = get_user_from_sessionid(sessionid=sessionid)
+
+                if user.last_name != 'admin':
+                    return JsonResponse({'message': 'Permission error'})
+
+                today_str = datetime.today().strftime("%Y/%m/%d")
+                reports = call_report_table.objects.filter(
+                    date__startswith=today_str
+                )
+                return_data = {
+                    'message': 'Success',
+                    'reports': []
+                    }
+
+                for report in reports:
+                    return_data['reports'].append({
+                        'reportId': report.id,
+                        'userPhoneNumber': report.userPhoneNumber,
+                        'address': report.address,
+                        'issue': report.issue,
+                        'status': report.status,
+                        'date': report.date,
+                        'call_date': report.call_date,
+                        'workerName': report.workerName
+                    })
+
+                return JsonResponse(return_data, status=200)
+
+            else:
+                return JsonResponse({'message': 'Session has expired'}, status=200)
+        except Session.DoesNotExist:
+            return JsonResponse({'message': 'Invalid session'}, status=200)
+    else:
+        return JsonResponse({'message': 'No sessionid cookie'}, status=200)

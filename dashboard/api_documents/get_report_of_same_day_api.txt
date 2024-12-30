@@ -1,0 +1,62 @@
+概述：
+    获取预约于当天的订单信息
+请求url：
+    https://localhost/api/dashboard/get_report_of_same_day/
+请求方式：
+    GET
+参数：
+    无
+响应示例：
+    sessionid成功验证：
+    成功查询：
+    {
+        'message': 'Success',
+        'reports': [
+            {
+                'reportId': report.id,
+                'userPhoneNumber': report.userPhoneNumber,
+                'address': report.address,
+                'issue': report.issue,
+                'status': report.status,
+                'date': report.date,
+                'call_date': report.call_date,
+                'workerName': report.workerName
+            },
+            {
+                'reportId': report.id,
+                'userPhoneNumber': report.userPhoneNumber,
+                'address': report.address,
+                'issue': report.issue,
+                'status': report.status,
+                'date': report.date,
+                'call_date': report.call_date,
+                'workerName': report.workerName
+            },
+            {
+                'reportId': report.id,
+                'userPhoneNumber': report.userPhoneNumber,
+                'address': report.address,
+                'issue': report.issue,
+                'status': report.status,
+                'date': report.date,
+                'call_date': report.call_date,
+                'workerName': report.workerName
+            },
+        ]
+    }
+    权限错误：
+    {
+        'message': 'Permission error'
+    }
+    sessionid过期：
+    {
+        'message': 'Session has expired'
+    }
+    sessionid不存在：
+    {
+        'message': 'Invalid session'
+    }
+    无cookies:
+    {
+        'message': 'No sessionid cookie'
+    }
