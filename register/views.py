@@ -69,3 +69,50 @@ def register(request):
 
         except json.JSONDecodeError:
             return JsonResponse({'message': 'Method not allowed'}, status=405)
+
+def worker_register(request):
+    '''
+    维修人员注册
+    '''
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            username = data['name']
+            password = data['password']
+            email = data['email']
+            code = data['code']
+
+            # 确保一个邮箱一个账号
+            try:
+                user = User.objects.get(email=email)
+                return JsonResponse({'message': '邮箱已被注册'}, status=200)
+            except:
+                pass
+            
+            # 判断验证码是否有效
+            status = verify_code(email, code)
+            if status != True:
+                return status
+
+
+            try:
+                user = User.objects.get(username=username)
+                response = Response(message='Existed', method='POST')
+                return response
+            except:
+                record = User.objects.create(
+                    username=username,
+                    last_name='worker',
+                    email=email
+                )
+                UserProfile.objects.create(
+                    user=record, # 在用户信息表中初始化一行
+                    phoneNumber='None'
+                )
+                record.set_password(password)
+                record.save()
+                response = Response(message='Success', method='POST')
+                return response
+
+        except json.JSONDecodeError:
+            return JsonResponse({'message': 'Method not allowed'}, status=405)
