@@ -153,6 +153,8 @@ def user_get_history_report(request):
                     date = report_info.date # 预约时间
                     call_date = report_info.call_date
                     report_id = report_info.id
+                    print(report.workerName)
+                    print(type(report.workerName))
 
                     return_report_info['report_info'].append({
                         'reportId': report_id,
