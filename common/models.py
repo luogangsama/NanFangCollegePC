@@ -38,4 +38,4 @@ class call_report_table(models.Model):
     # 维修人员手机号码
     workerPhoneNumber = models.CharField(max_length=11)
     # 维修人员姓名
-    workerName = models.ForeignKey(User, on_delete=models.CASCADE, related_name='call_report_table_profile_worker', null=True, blank=True)
+    workerName = models.ForeignKey(User, on_delete=models.CASCADE, related_name='call_report_table_profile_worker', null=True, blank=True, default='None')
