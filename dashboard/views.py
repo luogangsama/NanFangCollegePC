@@ -183,7 +183,7 @@ def worker_get_report_list(request):
             session = Session.objects.get(session_key=sessionid)
             if session.expire_date > timezone.now():
                 reports = []
-                my_reports = call_report_table.objects.all().order_by('-pk').filter(workerName=get_user_from_sessionid(sessionid=sessionid))
+                my_reports = call_report_table.objects.filter(workerName=get_user_from_sessionid(sessionid=sessionid))
                 if len(my_reports) == 0:
                     return JsonResponse({'message': 'No my report'}, status=200)
                 for report in my_reports:
@@ -558,7 +558,7 @@ def get_report_of_same_day(request):
                     return JsonResponse({'message': 'Permission error'})
 
                 today_str = datetime.date.today().strftime("%Y/%m/%d")
-                reports = call_report_table.objects.all().order_by('-pk').filter(
+                reports = call_report_table.objects.filter(
                     date__startswith=today_str
                 )
                 return_data = {
