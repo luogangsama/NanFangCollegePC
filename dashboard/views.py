@@ -134,7 +134,7 @@ def user_get_history_report(request):
                 # api验证通过后，根据sessionid获取用户
                 user = get_user_from_sessionid(sessionid=sessionid)
                 
-                report_infos = call_report_table.objects.filter(
+                report_infos = call_report_table.objects.all().order_by('-pk').filter(
                     user=user
                     )
                 if len(report_infos) == 0:
