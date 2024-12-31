@@ -1,0 +1,34 @@
+概述：
+    用户获取上次登录（有效时间内）所获取的城市
+请求url：
+    https://localhost/api/unit/user_get_ip/
+请求方式：
+    GET
+参数：
+    无
+响应示例：
+    sessionid成功验证：
+    缓存中有IP信息：
+    {
+        'message': 'Success',
+        'IP': {
+            'city': '广州',
+            'adcode': '40100'
+        }
+    }
+    缓存中无IP信息:
+    {
+        'message': 'No IP'
+    }
+    sessionid过期：
+    {
+        'message': 'Session has expired'
+    }
+    sessionid不存在：
+    {
+        'message': 'Invalid session'
+    }
+    未携带cookies：
+    {
+        'message': 'No sessionid cookie'
+    }

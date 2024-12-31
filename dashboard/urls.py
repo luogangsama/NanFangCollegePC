@@ -1,6 +1,6 @@
 from django.urls import path
 
-from dashboard.views import get_weather
+# from dashboard.views import get_weather
 from dashboard.views import call_report
 from dashboard.views import user_get_history_report
 from dashboard.views import worker_get_report_list
@@ -19,7 +19,7 @@ from dashboard.views import get_staff_of_same_day
 from dashboard.views import get_report_of_same_day
 
 urlpatterns = [
-    path('getWeatherApiKey/', get_weather),
+    # path('getWeatherApiKey/', get_weather),
     path('call_report/', call_report),
     path('user_get_history_report/', user_get_history_report),
     path('worker_get_report_list/', worker_get_report_list),

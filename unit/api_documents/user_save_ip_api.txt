@@ -1,0 +1,31 @@
+概述：
+    用户存储IP的接口，用于避免单个账号短时间内多次消耗第三方获取ip的额度
+请求url：
+    https://localhost/api/unit/user_save_ip/
+请求方式：
+    POST
+参数：
+    city, adcode
+输入示例:
+    {
+        'city': '广州',
+        'adcode': '440100'
+    }
+响应示例：
+    sessionid成功验证：
+    保存成功：
+    {
+        'message': 'Success'
+    }
+    sessionid过期：
+    {
+        'message': 'Session has expired'
+    }
+    sessionid不存在：
+    {
+        'message': 'Invalid session'
+    }
+    未携带cookies：
+    {
+        'message': 'No sessionid cookie'
+    }

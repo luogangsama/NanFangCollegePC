@@ -34,4 +34,5 @@ urlpatterns = [
     path('api/users/forget_password_send_code/', forget_password_send_code),
 
     path('api/dashboard/', include('dashboard.urls')),
+    path('api/unit/', include('unit.urls')),
 ]
