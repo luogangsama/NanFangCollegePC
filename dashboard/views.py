@@ -409,7 +409,7 @@ def complete_report(request):
 
                 try:
                     report = call_report_table.objects.get(pk=reportId)
-                    if report.status == '1':
+                    if report.status == '2':
                         return JsonResponse({'message': 'This report is completed'}, status=200)
                     
                     report.status = '2'
