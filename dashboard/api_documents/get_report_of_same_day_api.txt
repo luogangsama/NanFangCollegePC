@@ -20,7 +20,7 @@
                 'status': report.status,
                 'date': report.date,
                 'call_date': report.call_date,
-                'workerName': report.workerName
+                'workerName': report.workerName # 当订单未分配时这里是字符串"None"
             },
             {
                 'reportId': report.id,
@@ -30,7 +30,7 @@
                 'status': report.status,
                 'date': report.date,
                 'call_date': report.call_date,
-                'workerName': report.workerName
+                'workerName': report.workerName # 当订单未分配时这里是字符串"None"
             },
             {
                 'reportId': report.id,
@@ -40,7 +40,7 @@
                 'status': report.status,
                 'date': report.date,
                 'call_date': report.call_date,
-                'workerName': report.workerName
+                'workerName': report.workerName # 当订单未分配时这里是字符串"None"
             },
         ]
     }
