@@ -555,6 +555,7 @@ def get_report_of_same_day(request):
             if session.expire_date > timezone.now():
                 # api验证通过后，获取请求消息体中的内容
                 user = get_user_from_sessionid(sessionid=sessionid)
+                user_duty_time = UserProfile.objects.get(user=user).dutyTime
 
                 if user.last_name != 'admin':
                     return JsonResponse({'message': 'Permission error'})
@@ -568,7 +569,6 @@ def get_report_of_same_day(request):
                     'reports': []
                     }
 
-                print(len(reports))
 
                 for report in reports:
                     if report.workerName:
