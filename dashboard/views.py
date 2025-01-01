@@ -533,6 +533,7 @@ def get_staff_of_same_day(request):
 
                 for staff in staffs:
                     return_data['workers'].append({'username': staff.user.username})
+                print(f'与{user.username}同一天工作的人员名单:\n{return_data["workers"]}')
                 return JsonResponse(return_data, status=200)
             else:
                 return JsonResponse({'message': 'Session has expired'}, status=200)
@@ -585,6 +586,7 @@ def get_report_of_same_day(request):
                         'workerName': workerName,
                     })
 
+                print(f'今日订单:\n{return_data["reports"]}')
                 return JsonResponse(return_data, status=200)
 
             else:
