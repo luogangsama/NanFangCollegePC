@@ -1,7 +1,7 @@
 概述：
-    用户获取上次登录（有效时间内）所获取的城市
+    用户获取上次登录（有效时间内）所获取的城市，以及天气
 请求url：
-    https://localhost/api/unit/user_get_ip/
+    https://localhost/api/unit/user_get_ip_and_weather/
 请求方式：
     GET
 参数：
@@ -14,6 +14,14 @@
         'IP': {
             'city': '广州',
             'adcode': '40100'
+        },
+        'weather': {
+            "weather": "晴",
+            "temperature": "-5",
+            "winddirection": "东北",
+            "windpower": "≤3",
+            "humidity": "53",
+            "updatetime": "2025-01-01 03:02:27",
         }
     }
     缓存中无IP信息:

@@ -31,7 +31,7 @@ def get_user_from_sessionid(sessionid):
     except User.DoesNotExist:
         return None  # 用户不存在
 
-def user_get_ip(request):
+def user_get_ip_and_weather(request):
     '''
     获取用户存储的IP
     '''
@@ -48,12 +48,14 @@ def user_get_ip(request):
                     return JsonResponse({'message': 'No IP'})
                 city = IP['city']
                 adcode = IP['adcode']
+                weather = get_weather(adcode)
                 return JsonResponse({
                     'message': 'Success',
                     'IP': {
                         'city': city,
                         'adcode': adcode
-                    }
+                    },
+                    'weather': weather
                 })
             else:
                 return JsonResponse({'message': 'Session has expired'}, status=200)
@@ -101,61 +103,35 @@ def save_weather(adcode):
     response = requests.get(url)
     weather_info = response.json()['lives'][0]
 
-    # 获取需要储存的数据
-    updateTime = weather_info['reporttime'] # 更新时间
-    temperature = weather_info['temperature'] # 温度
-    weather = weather_info['weather'] # 天气
-    humidity = weather_info['humidity'] # 湿度
-    winddirection = weather_info['winddirection'] # 风向
-    windpower = weather_info['windpower'] # 风力                
-
+    # 储存数据
     cache.set(
         f'{adcode}_weather',
         {
-            'temperature': temperature,
-            'weather': weather,
-            'humidity': humidity,
-            'winddirection': winddirection,
-            'windpower': windpower,
-            'updateTime': updateTime
+            'temperature': weather_info['temperature'], # 温度
+            'weather': weather_info['weather'], # 天气
+            'humidity': weather_info['humidity'], # 湿度
+            'winddirection': weather_info['winddirection'], # 风向
+            'windpower': weather_info['windpower'], # 风力
+            'updateTime': weather_info['reporttime'] # 更新时间
         },
         900
         )
 
-def get_weather(request):
+def get_weather(adcode):
     '''
     根据adcode读取先前储存在缓存中的天气信息
     '''
-    sessionid = rq.COOKIES.get('sessionid')
-    if sessionid:
-        try:
-            session = Session.objects.get(session_key=sessionid)
-            session_data = session.get_decoded()
-            if session.expire_date > timezone.now():
-                # api验证通过后，获取请求消息体中的内容
-
-                adcode = json.loads(request.body)['adcode']
-
-                weather = cache.get(f'{adcode}_weather')
-                while weather is None:
-                    save_weather(adcode)
-                    weather = cache.get(f'{adcode}_weather')
-                # 结构如下
-                # weather = {
-                #     'temperature': temperature,
-                #     'weather': weather,
-                #     'humidity': humidity,
-                #     'winddirection': winddirection,
-                #     'windpower': windpower,
-                #     'updateTime': updateTime
-                # }
-                return JsonResponse({
-                    'message': 'Success',
-                    'weather': weather
-                    })
-            else:
-                return JsonResponse({'message': 'Session has expired'}, status=200)
-        except Session.DoesNotExist:
-            return JsonResponse({'message': 'Invalid session'}, status=200)
-    else:
-        return JsonResponse({'message': 'No sessionid cookie'}, status=200)
+    weather = cache.get(f'{adcode}_weather')
+    while weather is None:
+        save_weather(adcode)
+        weather = cache.get(f'{adcode}_weather')
+    # 结构如下
+    # weather = {
+    #     'temperature': temperature,
+    #     'weather': weather,
+    #     'humidity': humidity,
+    #     'winddirection': winddirection,
+    #     'windpower': windpower,
+    #     'updateTime': updateTime
+    # }
+    return {'weather': weather}
