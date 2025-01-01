@@ -48,7 +48,7 @@ def user_get_city_and_weather(request):
                 user = get_user_from_sessionid(sessionid=sessionid)
                 IP = cache.get(f'{user.username}_ip')
                 while IP is None:
-                    logger.success(f'未存储{user.username}的位置信息，开始尝试通过解析IP地址获取')
+                    logger.success(f'缓存中未存储{user.username}的位置信息，开始尝试通过解析IP地址获取')
                     save_ip(user.username, json.loads(request.body)['ip'])
                     IP = cache.get(f'{user.username}_ip')
 
@@ -63,7 +63,7 @@ def user_get_city_and_weather(request):
                     logger.error(f'依然无法获取{user.username}的位置信息，强制返回，位置信息于缓存中将储存为空')
                     return JsonResponse({'message': 'Unable obtain location info'}, status=200)
 
-                logger.success(f'成功从缓存中获取{user.username}的位置信息: {IP}')
+                logger.success(f'缓存中成功获取{user.username}的位置信息: {IP}')
                 city = IP['city']
                 adcode = IP['adcode']
                 weather = get_weather(city, adcode)
