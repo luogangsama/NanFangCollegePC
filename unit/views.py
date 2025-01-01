@@ -48,7 +48,7 @@ def user_get_city_and_weather(request):
                 user = get_user_from_sessionid(sessionid=sessionid)
                 IP = cache.get(f'{user.username}_ip')
                 while IP is None:
-                    logger.success(f'未存储{user.username}的IP信息，开始尝试获取')
+                    logger.success(f'未存储{user.username}的位置信息，开始尝试通过解析IP地址获取')
                     save_ip(user.username, json.loads(request.body)['ip'])
                     IP = cache.get(f'{user.username}_ip')
 
@@ -57,16 +57,16 @@ def user_get_city_and_weather(request):
                 # 接wifi后访问此网页也会直接返回空列表。为避免这
                 # 种情况，额外给此用户一次获取地址的机会
                 if len(IP['adcode']) == 0 or len(IP['city']) == 0:
-                    logger.warning(f'再次存储{user.username}的IP信息')
+                    logger.warning(f'改用户的位置信息为空，再次尝试解析存储{user.username}的位置信息')
                     save_ip(user.username, json.loads(request.body)['ip'])
                 if len(IP['adcode']) == 0 or len(IP['city']) == 0:
-                    logger.warning(f'依然无法获取{user.username}的IP信息，强制返回')
+                    logger.error(f'依然无法获取{user.username}的位置信息，强制返回')
                     return JsonResponse({'message': 'Unable obtain location info'}, status=200)
 
                 logger.success(f'成功从缓存中获取{user.username}的IP信息: \n{IP}')
                 city = IP['city']
                 adcode = IP['adcode']
-                weather = get_weather(adcode)
+                weather = get_weather(city, adcode)
                 return JsonResponse({
                     'message': 'Success',
                     'IP': {
@@ -122,16 +122,16 @@ def save_weather(adcode):
         900
         )
 
-def get_weather(adcode):
+def get_weather(city, adcode):
     '''
     根据adcode读取先前储存在缓存中的天气信息
     '''
     weather = cache.get(f'{adcode}_weather')
     while weather is None:
-        logger.success(f'未储存{adcode}的天气信息，开始尝试获取')
+        logger.success(f'未储存{city}的天气信息，开始尝试获取')
         save_weather(adcode)
         weather = cache.get(f'{adcode}_weather')
-    logger.success(f'{adcode}的天气信息获取成功:\n{weather}')
+    logger.success(f'缓存中成功获取{city}的天气信息:\n{weather}')
     # 结构如下
     # weather = {
     #     'temperature': temperature,
