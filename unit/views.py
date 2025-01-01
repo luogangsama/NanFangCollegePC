@@ -46,8 +46,10 @@ def user_get_city_and_weather(request):
                 user = get_user_from_sessionid(sessionid=sessionid)
                 IP = cache.get(f'{user.username}_ip')
                 while IP is None:
+                    print(f'未存储{user.username}的IP信息，开始尝试获取')
                     save_ip(user.username, json.loads(request.body)['ip'])
                     IP = cache.get(f'{user.username}_ip')
+                print(f'成功从缓存中获取{user.username}的IP信息: \n{IP}')
                 city = IP['city']
                 adcode = IP['adcode']
                 weather = get_weather(adcode)
@@ -112,8 +114,10 @@ def get_weather(adcode):
     '''
     weather = cache.get(f'{adcode}_weather')
     while weather is None:
+        print(f'未储存{adcode}的天气信息，开始尝试获取')
         save_weather(adcode)
         weather = cache.get(f'{adcode}_weather')
+    print(f'{adcode}的天气信息获取成功:\n{weather}')
     # 结构如下
     # weather = {
     #     'temperature': temperature,
