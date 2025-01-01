@@ -57,13 +57,13 @@ def user_get_city_and_weather(request):
                 # 接wifi后访问此网页也会直接返回空列表。为避免这
                 # 种情况，额外给此用户一次获取地址的机会
                 if len(IP['adcode']) == 0 or len(IP['city']) == 0:
-                    logger.warning(f'改用户的位置信息为空，再次尝试解析存储{user.username}的位置信息')
+                    logger.warning(f'用户{user.username}的位置信息为空，再次尝试解析IP并存储位置信息')
                     save_ip(user.username, json.loads(request.body)['ip'])
                 if len(IP['adcode']) == 0 or len(IP['city']) == 0:
-                    logger.error(f'依然无法获取{user.username}的位置信息，强制返回')
+                    logger.error(f'依然无法获取{user.username}的位置信息，强制返回，位置信息于缓存中将储存为空')
                     return JsonResponse({'message': 'Unable obtain location info'}, status=200)
 
-                logger.success(f'成功从缓存中获取{user.username}的IP信息: \n{IP}')
+                logger.success(f'成功从缓存中获取{user.username}的位置信息: {IP}')
                 city = IP['city']
                 adcode = IP['adcode']
                 weather = get_weather(city, adcode)
@@ -128,8 +128,9 @@ def get_weather(city, adcode):
     '''
     weather = cache.get(f'{adcode}_weather')
     while weather is None:
-        logger.success(f'未储存{city}的天气信息，开始尝试获取')
+        logger.success(f'缓存中未储存{city}的天气信息，开始尝试通过adcode向高德获取')
         save_weather(adcode)
+        logger.success(f'从高德成功获取{city}的天气信息，存入缓存')
         weather = cache.get(f'{adcode}_weather')
     logger.success(f'缓存中成功获取{city}的天气信息:\n{weather}')
     # 结构如下
