@@ -60,7 +60,8 @@ def user_get_city_and_weather(request):
                     logger.warning(f'再次存储{user.username}的IP信息')
                     save_ip(user.username, json.loads(request.body)['ip'])
                 if len(IP['adcode']) == 0 or len(IP['city']) == 0:
-                    JsonResponse({'message': 'Unable obtain location info'}, status=200)
+                    logger.warning(f'依然无法获取{user.username}的IP信息，强制返回')
+                    return JsonResponse({'message': 'Unable obtain location info'}, status=200)
 
                 logger.success(f'成功从缓存中获取{user.username}的IP信息: \n{IP}')
                 city = IP['city']
