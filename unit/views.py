@@ -49,6 +49,14 @@ def user_get_city_and_weather(request):
                     print(f'未存储{user.username}的IP信息，开始尝试获取')
                     save_ip(user.username, json.loads(request.body)['ip'])
                     IP = cache.get(f'{user.username}_ip')
+
+                # 部分使用流量的用户获取的地址和adcode是空列表
+                # 因为缓存机制会导致空列表也储存一段时间，下次连
+                # 接wifi后访问此网页也会直接返回空列表。为避免这
+                # 种情况，额外给此用户一次获取地址的机会
+                if len(IP['adcode']) == 0 or len(IP['city']) == 0:
+                    save_ip(user.username, json.loads(request.body)['ip'])
+
                 print(f'成功从缓存中获取{user.username}的IP信息: \n{IP}')
                 city = IP['city']
                 adcode = IP['adcode']
