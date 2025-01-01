@@ -1,11 +1,15 @@
 概述：
     用户获取上次登录（有效时间内）所获取的城市，以及天气
 请求url：
-    https://localhost/api/unit/user_get_ip_and_weather/
+    https://localhost/api/unit/user_get_city_and_weather/
 请求方式：
-    GET
+    POST
 参数：
-    无
+    ip
+请求示例:
+    {
+        'ip': '11.4.5.14'
+    }
 响应示例：
     sessionid成功验证：
     缓存中有IP信息：
@@ -13,7 +17,6 @@
         'message': 'Success',
         'IP': {
             'city': '广州',
-            'adcode': '40100'
         },
         'weather': {
             "weather": "晴",
@@ -23,10 +26,6 @@
             "humidity": "53",
             "updatetime": "2025-01-01 03:02:27",
         }
-    }
-    缓存中无IP信息:
-    {
-        'message': 'No IP'
     }
     sessionid过期：
     {

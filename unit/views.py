@@ -31,7 +31,7 @@ def get_user_from_sessionid(sessionid):
     except User.DoesNotExist:
         return None  # 用户不存在
 
-def user_get_ip_and_weather(request):
+def user_get_city_and_weather(request):
     '''
     获取用户存储的IP
     '''
@@ -44,8 +44,9 @@ def user_get_ip_and_weather(request):
                 # api验证通过后，获取请求消息体中的内容
                 user = get_user_from_sessionid(sessionid=sessionid)
                 IP = cache.get(f'{user.username}_ip')
-                if IP is None:
-                    return JsonResponse({'message': 'No IP'})
+                while IP is None:
+                    save_ip(user.username, json.loads(request.body)['ip'])
+                    IP = cache.get(f'{user.username}_ip')
                 city = IP['city']
                 adcode = IP['adcode']
                 weather = get_weather(adcode)
@@ -53,7 +54,6 @@ def user_get_ip_and_weather(request):
                     'message': 'Success',
                     'IP': {
                         'city': city,
-                        'adcode': adcode
                     },
                     'weather': weather
                 })
@@ -64,34 +64,22 @@ def user_get_ip_and_weather(request):
     else:
         return JsonResponse({'message': 'No sessionid cookie'}, status=200)
     
-def user_save_ip(request):
+def save_ip(username, ip):
     '''
     存储用户的IP，有效时间30分钟
     '''
-    sessionid = request.COOKIES.get('sessionid')
-    if sessionid:
-        try:
-            session = Session.objects.get(session_key=sessionid)
-            session_data = session.get_decoded()
-            if session.expire_date > timezone.now():
-                # api验证通过后，获取请求消息体中的内容
-                user = get_user_from_sessionid(sessionid=sessionid)
-                city = json.loads(request.body)['city']
-                adcode = json.loads(request.body['adcode'])
-                cache.set(
-                    f'{user.username}_ip',
-                    {
-                        'city': city,
-                        'adcode': adcode
-                    },
-                    1800)
-                return JsonResponse({'message': 'Success'})
-            else:
-                return JsonResponse({'message': 'Session has expired'}, status=200)
-        except Session.DoesNotExist:
-            return JsonResponse({'message': 'Invalid session'}, status=200)
-    else:
-        return JsonResponse({'message': 'No sessionid cookie'}, status=200)
+    apiKey = '7be7dff3729983328f5bbc4815cd5022'
+    get_adcode_from_ip_url = f'https://restapi.amap.com/v3/ip?ip={ip}&key={apiKey}'
+    response = requests.get(get_adcode_from_ip_url)
+    city = response.json()['city']
+    adcode = response.json()['adcode']
+    cache.set(
+        f'{username}_ip',
+        {
+            'city': city,
+            'adcode': adcode
+        },
+        1800)
 
 def save_weather(adcode):
     '''
