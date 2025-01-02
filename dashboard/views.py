@@ -547,8 +547,8 @@ def get_report_of_same_day(request):
                 if user.last_name != 'admin':
                     return JsonResponse({'message': 'Permission error'})
 
-                reports = call_report_table.objects.filter(
-                    weekday=UserProfile.objects.all().order_by('-pk').get(user=user).dutyTime
+                reports = call_report_table.objects.all().order_by('-pk').filter(
+                    weekday=UserProfile.objects.get(user=user).dutyTime
                     )
                 return_data = {
                     'message': 'Success',
