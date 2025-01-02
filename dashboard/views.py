@@ -67,25 +67,6 @@ def get_user_info(request):
         return JsonResponse({'message': 'No sessionid cookie'}, status=200)
 
 
-# def get_weather(request):
-#     '''
-#     验证前端请求的cookies可用后响应前端一个api密钥（用于获取天气信息）
-#     '''
-#     apiKey = '7be7dff3729983328f5bbc4815cd5022'
-#     sessionid = request.COOKIES.get('sessionid')
-    
-#     if sessionid:
-#         try:
-#             session = Session.objects.get(session_key=sessionid)
-#             if session.expire_date > timezone.now():
-#                 return JsonResponse({'message': 'Success', 'apiKey': apiKey}, status=200)
-#             else:
-#                 return JsonResponse({'message': 'Session has expired'}, status=200)
-#         except Session.DoesNotExist:
-#             return JsonResponse({'message': 'Invalid session'}, status=200)
-#     else:
-#         return JsonResponse({'message': 'No sessionid cookie'}, status=200)
-
 def call_report(request):
     '''
     接受前端发送的报单请求，并验证cookies后将订单存入数据库
@@ -566,12 +547,8 @@ def get_report_of_same_day(request):
                 if user.last_name != 'admin':
                     return JsonResponse({'message': 'Permission error'})
 
-                # today_str = datetime.date.today().strftime("%Y/%m/%d")
-                # reports = call_report_table.objects.all().order_by('-pk').filter(
-                #     date__startswith=today_str
-                # )
                 reports = call_report_table.objects.filter(
-                    weekday=UserProfile.objects.get(user=user).dutyTime
+                    weekday=UserProfile.objects.all().order_by('-pk').get(user=user).dutyTime
                     )
                 return_data = {
                     'message': 'Success',
