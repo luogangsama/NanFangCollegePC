@@ -158,6 +158,7 @@ def user_get_history_report(request):
                     date = report_info.date # 预约时间
                     call_date = report_info.call_date
                     report_id = report_info.id
+                    weekday = report_info.weekday
 
                     return_report_info['report_info'].append({
                         'reportId': report_id,
@@ -166,8 +167,10 @@ def user_get_history_report(request):
                         'issue': issue,
                         'status': status,
                         'date': date,
-                        'call_date': call_date
+                        'call_date': call_date,
+                        'weekday': weekday
                     })
+                    logger.success(f'{user.username}的历史订单: {return_report_info["report_info"]}')
 
                 return JsonResponse(return_report_info, status=200)
             else:
