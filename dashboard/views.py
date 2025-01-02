@@ -9,6 +9,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth import logout, login
 from django.contrib.auth.hashers import check_password
 from django.core.cache import cache
+
+from loguru import logger
 import hashlib
 import json
 import datetime
@@ -102,7 +104,8 @@ def call_report(request):
                 userPhoneNumber = data['userPhoneNumber']
                 address = data['address']
                 issue = data['issue']
-                date = data['date']
+                date = data['date'] # 时间格式%Y/%m/%d %H:%M
+                weekday = str(datetime.date.strftime('%Y/%m/%d %H:%M').weekday() + 1)
                 call_date = data['call_date'] # 订单提交的时间
 
                 call_report_table.objects.create(
@@ -111,7 +114,8 @@ def call_report(request):
                     address=address,
                     issue=issue,
                     date=date,
-                    call_date=call_date
+                    call_date=call_date,
+                    weekday=weekday
                 )
                 return JsonResponse({'message': 'Success', 'orderDetails': '订单提交成功'}, status=200)
             else:
@@ -533,7 +537,7 @@ def get_staff_of_same_day(request):
 
                 for staff in staffs:
                     return_data['workers'].append({'username': staff.user.username})
-                print(f'与{user.username}同一天工作的人员名单:\n{return_data["workers"]}')
+                logger.success(f'与{user.username}同一天工作的人员名单:\n{return_data["workers"]}')
                 return JsonResponse(return_data, status=200)
             else:
                 return JsonResponse({'message': 'Session has expired'}, status=200)
@@ -560,10 +564,12 @@ def get_report_of_same_day(request):
                 if user.last_name != 'admin':
                     return JsonResponse({'message': 'Permission error'})
 
-                today_str = datetime.date.today().strftime("%Y/%m/%d")
-                reports = call_report_table.objects.all().order_by('-pk').filter(
-                    date__startswith=today_str
-                )
+                # today_str = datetime.date.today().strftime("%Y/%m/%d")
+                # reports = call_report_table.objects.all().order_by('-pk').filter(
+                #     date__startswith=today_str
+                # )
+                user_duty_time = UserProfile.objects.get(user=user).dutyTime
+                reports = call_report_table.objects.get(weekday=user_duty_time)
                 return_data = {
                     'message': 'Success',
                     'reports': []
@@ -586,7 +592,7 @@ def get_report_of_same_day(request):
                         'workerName': workerName,
                     })
 
-                print(f'今日订单:\n{return_data["reports"]}')
+                logger.success(f'{user.username}管理的订单:\n{return_data["reports"]}')
                 return JsonResponse(return_data, status=200)
 
             else:
