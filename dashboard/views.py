@@ -569,7 +569,7 @@ def get_report_of_same_day(request):
                 #     date__startswith=today_str
                 # )
                 user_duty_time = UserProfile.objects.get(user=user).dutyTime
-                reports = call_report_table.objects.get(weekday=user_duty_time)
+                reports = call_report_table.objects.filter(weekday=user_duty_time)
                 return_data = {
                     'message': 'Success',
                     'reports': []
