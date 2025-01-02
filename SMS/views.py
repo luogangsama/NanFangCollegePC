@@ -26,7 +26,7 @@ def send_verification_email(email):
     store_verification_code(email, code)
     
     # 发送邮件
-    subject = '您的验证码'
+    subject = '广州南方学院PC志愿者服务队'
     message = f'您的验证码是：{code}，有效期为5分钟。'
     try:
         status = send_mail(subject, message, EMAIL_FROM, [email], fail_silently=False)
