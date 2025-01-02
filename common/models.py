@@ -31,7 +31,7 @@ class call_report_table(models.Model):
     # 预约维修时间
     date = models.CharField(max_length=50)
     # 预约时间所对应的星期
-    weekday = model.CharField(max_length=1)
+    weekday = models.CharField(max_length=1)
     # 订单提交时间
     call_date = models.CharField(max_length=50)
     # 订单状态
