@@ -156,18 +156,18 @@ LOGGING = {
     "disable_existing_loggers": False,  # 不禁用其他日志
     "handlers": {
         "loguru": {
-            "level": "DEBUG",
+            "level": "INFO",
             "class": "NanFangCollegePC.loguru_config.InterceptHandler",  # 使用 loguru 的处理器
         },
     },
     "root": {
         "handlers": ["loguru"],
-        "level": "DEBUG",
+        "level": "INFO",
     },
     "loggers": {
         "django": {
             "handlers": ["loguru"],
-            "level": "DEBUG",
+            "level": "INFO",
             "propagate": False,
         },
         "django.request": {
