@@ -12,7 +12,7 @@ logger.add(
     rotation="1 day",  # 每天轮换日志
     retention="7 days",  # 保留 7 天的日志
     encoding="utf-8",
-    level="DEBUG",
+    level="INFO",
 )
 
 # 注册标准日志级别到 loguru
