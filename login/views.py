@@ -9,29 +9,8 @@ from django.http import JsonResponse
 from loguru import logger
 import json
 import hashlib
+from unit.views import session_check, get_user_from_sessionid
 
-# Create your views here.
-def get_user_from_sessionid(sessionid):
-    try:
-        # 获取会话对象
-        session = Session.objects.get(session_key=sessionid)
-
-        # 检查会话是否过期
-        if session.expire_date < now():
-            return None  # 会话已过期
-
-        # 获取会话数据
-        session_data = session.get_decoded()
-
-        # 提取用户 ID
-        user_id = session_data.get('_auth_user_id')
-
-        # 返回用户对象
-        return User.objects.get(pk=user_id) if user_id else None
-    except Session.DoesNotExist:
-        return None  # sessionid 无效
-    except User.DoesNotExist:
-        return None  # 用户不存在
 
 def Response(message:str, method:str):
     response = JsonResponse({'message': message})
@@ -66,28 +45,16 @@ def signin(request):
             response = Response(message='PASSWORD ERROR', method='POST')
             return response
 
+@session_check
 def auto_login(request):
     '''
     验证sessionid后自动登录
     '''
     sessionid = request.COOKIES.get('sessionid')
-    
-    if sessionid:
-        try:
-            session = Session.objects.get(session_key=sessionid)
-            session_data = session.get_decoded()
-            user = get_user_from_sessionid(sessionid=sessionid)
-            if session.expire_date > timezone.now():
-                # 验证sessionid合法后返回登录成功
-                logger.success(f'{user.username}自动登录成功')
-                return JsonResponse({'message': 'Success'}, status=200)
-            else:
-                logger.success(f'{user.username}session失效，需重新登录')
-                return JsonResponse({'message': 'Session has expired'}, status=200)
-        except Session.DoesNotExist:
-            return JsonResponse({'message': 'Invalid session'}, status=200)
-    else:
-        return JsonResponse({'message': 'No sessionid cookie'}, status=200)
+    user = get_user_from_sessionid(sessionid)
+    # 验证sessionid合法后返回登录成功
+    logger.success(f'{user.username}自动登录成功')
+    return JsonResponse({'message': 'Success'}, status=200)
 
 from SMS.views import verify_code, send_verification_email
 def forget_password_send_code(request):

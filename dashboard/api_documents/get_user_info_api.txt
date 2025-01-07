@@ -6,22 +6,33 @@
     GET
 参数：
     无
-响应示例：
-    sessionid成功验证：
+成功响应示例：
+    HTTP/1.1 200 OK
+    Content-Type: application/json
     {
         'message': 'Success',
         'username': 'username'
         'label': 'customer' # customer: 普通用户; worker: 维修人员; admin: 管理员
     }                       #报修界面中普通用户只有报修界面，维修人员有查看属于自己的订单界面同时有报修界面，管理员比维修人员多一个分配订单的界面
+
+错误响应：
     sessionid过期：
+    HTTP/1.1 401 Unauthorized
+    Content-Type: application/json
     {
         'message': 'Session has expired'
     }
+
     sessionid不存在：
+    HTTP/1.1 401 Unauthorized
+    Content-Type: application/json
     {
         'message': 'Invalid session'
     }
+
     无cookies:
+    HTTP/1.1 400 Bad Request
+    Content-Type: application/json
     {
         'message': 'No sessionid cookie'
     }

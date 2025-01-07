@@ -11,37 +11,61 @@
         'reportId': '555',
         'workerName': 'test'
     }
-响应示例：
+成功响应示例：
     sessionid成功验证：
     分配成功：
+    HTTP/1.1 200 OK
+    Content-Type: application/json
     {
         'message': 'Success'
     }
-    权限错误：
-    {
-        'message': 'Permission error'
-    }
+
     被分配者不存在：
+    HTTP/1.1 200 OK
+    Content-Type: application/json
     {
         'message': 'This worker is no exist'
     }
+
     该订单已被分配：
+    HTTP/1.1 200 OK
+    Content-Type: application/json
     {
         'message': 'This report is allocated'
     }
+
     该订单不存在：
+    HTTP/1.1 200 OK
+    Content-Type: application/json
     {
         'message': 'This report is no exist'
     }
+
+错误响应：
+    权限错误：
+    HTTP/1.1 200 Forbidden
+    Content-Type: application/json
+    {
+        'message': 'Permission error'
+    }
+
     sessionid过期：
+    HTTP/1.1 401 Unauthorized
+    Content-Type: application/json
     {
         'message': 'Session has expired'
     }
+
     sessionid不存在：
+    HTTP/1.1 401 Unauthorized
+    Content-Type: application/json
     {
         'message': 'Invalid session'
     }
-    未携带cookies：
+
+    无cookies:
+    HTTP/1.1 400 Bad Request
+    Content-Type: application/json
     {
         'message': 'No sessionid cookie'
     }

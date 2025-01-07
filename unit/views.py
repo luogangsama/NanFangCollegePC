@@ -10,76 +10,66 @@ import json
 import datetime
 import requests
 
+def session_check(func):
+    def wrapper(request, *args, **kwargs):
+        sessionid = request.COOKIES.get('sessionid')
+        if not sessionid:
+            return JsonResponse({'message': 'No sessionid cookie'}, status=400)
+        try:
+            session = Session.objects.get(session_key=sessionid)
+            session_data = session.get_decoded()
+            if session.expire_date <= timezone.now():
+                return JsonResponse({'message': 'Session has expired'}, status=401)
+        except Session.DoesNotExist:
+            return JsonResponse({'message': 'Invalid session'}, status=401)
+        return func(request, *args, **kwargs)
+    return wrapper
+
 
 # Create your views here.
 def get_user_from_sessionid(sessionid):
-    try:
-        # 获取会话对象
-        session = Session.objects.get(session_key=sessionid)
+    # 获取会话数据
+    session_data = session.get_decoded()
+    # 提取用户 ID
+    user_id = session_data.get('_auth_user_id')
+    # 返回用户对象
+    return User.objects.get(pk=user_id) if user_id else None
 
-        # 检查会话是否过期
-        if session.expire_date < now():
-            return None  # 会话已过期
-
-        # 获取会话数据
-        session_data = session.get_decoded()
-
-        # 提取用户 ID
-        user_id = session_data.get('_auth_user_id')
-
-        # 返回用户对象
-        return User.objects.get(pk=user_id) if user_id else None
-    except Session.DoesNotExist:
-        return None  # sessionid 无效
-    except User.DoesNotExist:
-        return None  # 用户不存在
-
+@session_check
 def user_get_city_and_weather(request):
     '''
     获取用户存储的IP
     '''
     sessionid = request.COOKIES.get('sessionid')
-    if sessionid:
-        try:
-            session = Session.objects.get(session_key=sessionid)
-            session_data = session.get_decoded()
-            if session.expire_date > timezone.now():
-                # api验证通过后，获取请求消息体中的内容
-                user = get_user_from_sessionid(sessionid=sessionid)
-                IP = cache.get(f'{user.username}_ip')
-                while IP is None:
-                    logger.success(f'缓存中未存储{user.username}的位置信息，开始尝试通过解析IP地址获取')
-                    save_ip(user.username, json.loads(request.body)['ip'])
-                    IP = cache.get(f'{user.username}_ip')
+    user = get_user_from_sessionid(sessionid=sessionid)
+    IP = cache.get(f'{user.username}_ip')
+    while IP is None:
+        logger.success(f'缓存中未存储{user.username}的位置信息，开始尝试通过解析IP地址获取')
+        save_ip(user.username, json.loads(request.body)['ip'])
+        IP = cache.get(f'{user.username}_ip')
 
-                # 部分使用流量的用户获取的地址和adcode是空列表
-                # 因为缓存机制会导致空列表也储存一段时间，下次连
-                # 接wifi后访问此网页也会直接返回空列表。为避免这
-                # 种情况，额外给此用户一次获取地址的机会
-                if len(IP['adcode']) == 0 or len(IP['city']) == 0:
-                    logger.warning(f'用户{user.username}的位置信息为空，再次尝试解析IP并存储位置信息')
-                    save_ip(user.username, json.loads(request.body)['ip'])
-                if len(IP['adcode']) == 0 or len(IP['city']) == 0:
-                    logger.error(f'依然无法获取{user.username}的位置信息，强制返回，位置信息于缓存中将储存为空')
-                    return JsonResponse({'message': 'Unable obtain location info'}, status=500)
+    # 部分使用流量的用户获取的地址和adcode是空列表
+    # 因为缓存机制会导致空列表也储存一段时间，下次连
+    # 接wifi后访问此网页也会直接返回空列表。为避免这
+    # 种情况，额外给此用户一次获取地址的机会
+    if len(IP['adcode']) == 0 or len(IP['city']) == 0:
+        logger.warning(f'用户{user.username}的位置信息为空，再次尝试解析IP并存储位置信息')
+        save_ip(user.username, json.loads(request.body)['ip'])
+    if len(IP['adcode']) == 0 or len(IP['city']) == 0:
+        logger.error(f'依然无法获取{user.username}的位置信息，强制返回，位置信息于缓存中将储存为空')
+        return JsonResponse({'message': 'Unable obtain location info'}, status=500)
 
-                logger.success(f'缓存中成功获取{user.username}的位置信息: {IP}')
-                city = IP['city']
-                adcode = IP['adcode']
-                weather = get_weather(city, adcode)
-                return JsonResponse({
-                    'message': 'Success',
-                    'IP': {
-                        'city': city,
-                    },
-                    'weather': weather
-                })
-            else:
-                return JsonResponse({'message': 'Session has expired'}, status=200)
-        except Session.DoesNotExist:
-            return JsonResponse({'message': 'Invalid session'}, status=200)
-    else:
-        return JsonResponse({'message': 'No sessionid cookie'}, status=200)
+    logger.success(f'缓存中成功获取{user.username}的位置信息: {IP}')
+    city = IP['city']
+    adcode = IP['adcode']
+    weather = get_weather(city, adcode)
+    return JsonResponse({
+        'message': 'Success',
+        'IP': {
+            'city': city,
+        },
+        'weather': weather
+    }, status=200)
     
 def save_ip(username, ip):
     '''

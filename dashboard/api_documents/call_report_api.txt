@@ -5,7 +5,7 @@
 请求方式：
     POST
 参数：
-    userPhoneNumber, address, call_date(订单提交时间)
+    userPhoneNumber, address, call_date(订单提交时间，时间格式: %Y-%m-%d %H:%M)
 输入示例:
     {
         'userPhoneNumber': '12345678901',
@@ -15,19 +15,31 @@
         'call_date': '2024/12/20'
     }
 响应示例：
-    sessionid成功验证：
+    HTTP/1.1 200 OK
+    Content-Type: application/json
     {
         'message': 'Success'
     }
+
+
+错误响应：
     sessionid过期：
+    HTTP/1.1 401 Unauthorized
+    Content-Type: application/json
     {
         'message': 'Session has expired'
     }
+
     sessionid不存在：
+    HTTP/1.1 401 Unauthorized
+    Content-Type: application/json
     {
         'message': 'Invalid session'
     }
-    未携带cookies：
+
+    无cookies:
+    HTTP/1.1 400 Bad Request
+    Content-Type: application/json
     {
         'message': 'No sessionid cookie'
     }
