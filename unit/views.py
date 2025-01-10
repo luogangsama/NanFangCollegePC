@@ -92,7 +92,10 @@ def save_weather(adcode):
     '''
     暂存一段时间某地某时刻的天气，有效时间为高德天气api最近一次更新时间开始15分钟
     '''
-    apiKey = '7be7dff3729983328f5bbc4815cd5022'
+    # apiKey = '7be7dff3729983328f5bbc4815cd5022'
+    with open('/root/get_weather_key.txt', 'r') as f:
+        apiKey = f.readline()
+        apiKey = apiKey[0: -1]
     url = f'https://restapi.amap.com/v3/weather/weatherInfo?key={apiKey}&city={adcode}&extensions=base'
 
     response = requests.get(url)
