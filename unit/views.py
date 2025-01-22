@@ -28,6 +28,8 @@ def session_check(func):
 
 # Create your views here.
 def get_user_from_sessionid(sessionid):
+    # 获取会话对象
+    session = Session.objects.get(session_key=sessionid)
     # 获取会话数据
     session_data = session.get_decoded()
     # 提取用户 ID
