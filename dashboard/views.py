@@ -289,6 +289,7 @@ def cancel_report(request):
     '''
     用户撤销报单
     '''
+    sessionid = request.COOKIES.get('sessionid')
     user = get_user_from_sessionid(sessionid=sessionid)
     # 获取请求消息体中的内容
     data = json.loads(request.body)
