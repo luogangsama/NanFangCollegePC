@@ -61,7 +61,7 @@ def call_report(request):
         issue=issue,
         date=date,
         call_date=call_date,
-        weekday=weekday
+        weekday=weekday,
     )
     return JsonResponse({'message': 'Success', 'orderDetails': '订单提交成功'}, status=200)
 
