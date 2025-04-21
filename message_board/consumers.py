@@ -40,7 +40,7 @@ class MessageConsumer(AsyncWebsocketConsumer):
             {
                 'type': 'chat_message',
                 'message': {
-                    'username': self.username,
+                    'user_id': self.username,
                     'message': message
                 }
             }
