@@ -3,3 +3,4 @@ start.sh
 db.sqlite3
 *.sqlite3
 /logs/
+websocketNote.md
