@@ -84,7 +84,7 @@ DATABASES = {
 }
 
 
-ASGI_APPLICATION = 'NanFangCollegePC.asig.application'
+ASGI_APPLICATION = 'NanFangCollegePC.asgi.application'
 # 配置通道层，用于多实例通信
 # 仅单机调试可省略，建议使用 Redis
 CHANNEL_LAYERS = {
