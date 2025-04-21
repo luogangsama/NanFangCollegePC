@@ -1,17 +1,27 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth.models import User
+from asgiref.sync import sync_to_async
+from urllib.parse import parse_qs
 
 class MessageConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.report_id = self.scope['url_route']['kwargs']['report_id']
-        self.username = self.scope['url_route']['kwargs']['report_id']
-        # user_id = self.scope['url_route']['kwargs']['user_id']
-        # user = User.objects.get(id=user_id)
-        # if user.last_name != 'customer':
-        #     self.username = f'志愿者-{user.username}'
-        # else:
-        #     self.username = user.username
+        query_string = self.scope["query_string"].decode()
+        query_params = parse_qs(query_string)
+
+        self.report_id = query_params.get("report_id", [None])[0]
+        user = self.scope["user"]
+        if not user.is_authenticated:
+            await self.close()
+            return
+
+        self.user = user
+
+
+        if user.last_name != 'customer':
+            self.username = f'志愿者-{user.username}'
+        else:
+            self.username = user.username
         self.room_group_name = f'message_{self.report_id}'
 
         # 加入房间组
@@ -31,8 +41,7 @@ class MessageConsumer(AsyncWebsocketConsumer):
 
     # 接收 WebSocket 消息
     async def receive(self, text_data):
-        data = json.loads(text_data)
-        message = data['message']
+        message = text_data
 
         # 发送到房间组
         await self.channel_layer.group_send(
@@ -40,7 +49,7 @@ class MessageConsumer(AsyncWebsocketConsumer):
             {
                 'type': 'chat_message',
                 'message': {
-                    'user_id': self.username,
+                    'username': self.username,
                     'message': message
                 }
             }

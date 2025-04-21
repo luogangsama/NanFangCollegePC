@@ -1,0 +1,16 @@
+概述：
+    留言板websocket api
+请求url：
+    ws://localhost:8000/ws/message/?report_id=
+请求参数:
+    reportId，置于如上url的report_id=
+输入示例:
+    ws://localhost:8000/ws/message/?report_id=100
+广播响应示例：
+    {
+        'type': 'chat_message',
+        'message': {
+            'username': '张三',
+            'message': 'Hello World'
+        }
+    }
