@@ -11,7 +11,7 @@ import os
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
 from channels.auth import AuthMiddlewareStack
-from message_board.routing import routing
+from message_board import routing
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'NanFangCollegePC.settings')
 
@@ -20,7 +20,7 @@ application = ProtocolTypeRouter({
     # 你可以在这里加入 websocket 路由
     "websocket": AuthMiddlewareStack(
         URLRouter([
-            routing.routing.websocket_urlpatterns
+            routing.websocket_urlpatterns
         ])
     ),
 })
