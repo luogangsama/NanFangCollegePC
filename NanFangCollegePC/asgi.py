@@ -18,7 +18,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'NanFangCollegePC.settings')
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     # 你可以在这里加入 websocket 路由
-    "websockets": AuthMiddlewareStack(
+    "websocket": AuthMiddlewareStack(
         URLRouter(
             routing.websocket_urlpatterns
         )
