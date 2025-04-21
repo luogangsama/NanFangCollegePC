@@ -5,12 +5,13 @@ from django.contrib.auth.models import User
 class MessageConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.report_id = self.scope['url_route']['kwargs']['report_id']
-        user_id = self.scope['url_route']['kwargs']['user_id']
-        user = User.objects.get(id=user_id)
-        if user.last_name != 'customer':
-            self.username = f'志愿者-{user.username}'
-        else:
-            self.username = user.username
+        self.username = self.scope['url_route']['kwargs']['report_id']
+        # user_id = self.scope['url_route']['kwargs']['user_id']
+        # user = User.objects.get(id=user_id)
+        # if user.last_name != 'customer':
+        #     self.username = f'志愿者-{user.username}'
+        # else:
+        #     self.username = user.username
         self.room_group_name = f'message_{self.report_id}'
 
         # 加入房间组

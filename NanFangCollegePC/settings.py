@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'daphne',
     'django.contrib.staticfiles',
     
     'common.apps.CommonConfig',
@@ -91,7 +92,7 @@ CHANNEL_LAYERS = {
     "default": {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'COFIG': {
-            'hosts': [('127.0.0.1', 6379)]
+            'hosts': [('127.0.0.1', 6379)],
         }
     }
 }

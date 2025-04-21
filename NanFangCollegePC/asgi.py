@@ -19,9 +19,9 @@ application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     # 你可以在这里加入 websocket 路由
     "websocket": AuthMiddlewareStack(
-        URLRouter([
+        URLRouter(
             routing.websocket_urlpatterns
-        ])
+        )
     ),
 })
 
