@@ -89,7 +89,10 @@ ASGI_APPLICATION = 'NanFangCollegePC.asgi.application'
 # 仅单机调试可省略，建议使用 Redis
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'COFIG': {
+            'hosts': [('127.0.0.1', 6379)]
+        }
     }
 }
 
