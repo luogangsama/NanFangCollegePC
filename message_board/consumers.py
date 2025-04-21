@@ -54,6 +54,7 @@ class MessageConsumer(AsyncWebsocketConsumer):
                 }
             }
         )
+        print(f'talker: {self.username}, message: {message}')
 
     # 从房间组接收消息
     async def chat_message(self, event):
