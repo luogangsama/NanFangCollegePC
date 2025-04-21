@@ -16,7 +16,7 @@ from message_board import routing
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'NanFangCollegePC.settings')
 
 application = ProtocolTypeRouter({
-    "https": get_asgi_application(),
+    "http": get_asgi_application(),
     # 你可以在这里加入 websocket 路由
     "websockets": AuthMiddlewareStack(
         URLRouter(
