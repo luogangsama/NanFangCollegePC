@@ -41,10 +41,7 @@ class MessageConsumer(AsyncWebsocketConsumer):
 
     # 接收 WebSocket 消息
     async def receive(self, text_data):
-        # message = json.dumps(text_data)['message']
-        print(type(eval(text_data)))
-        message = ''
-
+        message = eval(text_data)['message']
         # 发送到房间组
         await self.channel_layer.group_send(
             self.room_group_name,
