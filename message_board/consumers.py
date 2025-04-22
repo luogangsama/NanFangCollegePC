@@ -46,13 +46,13 @@ class MessageConsumer(AsyncWebsocketConsumer):
         # 发送到房间组
         await self.channel_layer.group_send(
             self.room_group_name,
-            json.dumps({
+            {
                 'type': 'chat_message',
                 'message': {
                     'username': self.username,
                     'message': message
                 }
-            })
+            }
         )
         print(f'talker: {self.username}, message: {message}')
 
