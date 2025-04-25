@@ -3,6 +3,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth.models import User
 from asgiref.sync import sync_to_async
 from urllib.parse import parse_qs
+from common.models import call_report_table, report_message_board_record
 
 class MessageConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -58,3 +59,12 @@ class MessageConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'message': message
         }))
+        reportId = self.report_id
+        # 根据订单号获取订单对象
+        report = call_report_table.objects.get(pk=reportId)
+        # 根据订单对象往留言记录表中插入记录
+        report_message_board_record.objects.create(
+            report=report,
+            user=self.user,
+            message=message
+        )

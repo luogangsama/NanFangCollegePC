@@ -43,8 +43,8 @@ class call_report_table(models.Model):
     workerName = models.ForeignKey(User, on_delete=models.CASCADE, related_name='call_report_table_profile_worker', null=True, blank=True)
 
 class report_message_board_record(models.Model):
-    # 订单号
-    reportId = models.ForeignKey(call_report_table, on_delete=models.CASCADE, related_name="message_reportId")
+    # 订单
+    report = models.ForeignKey(call_report_table, on_delete=models.CASCADE, related_name="message_reportId")
     # 留言人
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="message_record_User")
     # 留言内容
