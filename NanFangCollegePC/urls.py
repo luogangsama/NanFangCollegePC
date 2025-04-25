@@ -37,4 +37,5 @@ urlpatterns = [
 
     path('api/dashboard/', include('dashboard.urls')),
     path('api/unit/', include('unit.urls')),
+    path('api/message_board/', include('message_board.urls')),
 ]

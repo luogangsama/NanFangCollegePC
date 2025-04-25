@@ -1,0 +1,64 @@
+概述：
+    获取历史留言板记录
+请求url：
+    https://localhost/api/message_board/get_message_record/
+请求方式：
+    POST
+参数：
+    reportId
+请求示例：
+{
+    'reportId': '555'   
+}
+响应示例：
+    sessionid成功验证：
+    成功获取记录
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    {
+        'message': 'Success',
+        'message_record': {
+            'record': [
+                {
+                    'username': '张三',
+                    'message': '111'
+                },
+                {
+                    'username': '李四',
+                    'message': '222'
+                },
+            ]
+        }
+    }
+    空聊天记录:
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    {
+        'message': 'Success',
+        'message_record': {
+            'record': []
+        }
+    }
+
+
+错误响应：
+    sessionid过期：
+    HTTP/1.1 401 Unauthorized
+    Content-Type: application/json
+    {
+        'message': 'Session has expired'
+    }
+
+    sessionid不存在：
+    HTTP/1.1 401 Unauthorized
+    Content-Type: application/json
+    {
+        'message': 'Invalid session'
+    }
+
+    无cookies:
+    HTTP/1.1 400 Bad Request
+    Content-Type: application/json
+    {
+        'message': 'No sessionid cookie'
+    }
