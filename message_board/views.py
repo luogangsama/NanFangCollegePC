@@ -11,7 +11,7 @@ def get_message_record(requests):
     data = json.loads(requests.body)
     reportId = data['reportId']
     # 根据订单号获取订单对象
-    report = call_report_table.objects.get(pk=reportId)
+    report = call_report_table.objects.get(id=reportId)
     # 根据订单对象查找留言记录表，获取属于此订单的留言记录
     message_records = report_message_board_record.objects.all().order_by('-pk').filter(
         report=report
