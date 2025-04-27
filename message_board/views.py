@@ -9,7 +9,6 @@ import json
 @session_check
 def get_message_record(requests):
     data = json.loads(requests.body)
-    print("\n\n\n\n", data)
     reportId = int(data['reportId'])
     # 根据订单号获取订单对象
     report = call_report_table.objects.get(id=reportId)
