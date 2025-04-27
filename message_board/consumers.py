@@ -61,7 +61,7 @@ class MessageConsumer(AsyncWebsocketConsumer):
         }))
         reportId = int(self.report_id)
         # 根据订单号获取订单对象
-        report = call_report_table.objects.get(id=reportId)
+        report = await sync_to_async(call_report_table.objects.get)(id=reportId)
         # 根据订单对象往留言记录表中插入记录
         report_message_board_record.objects.create(
             report=report,
