@@ -9,7 +9,8 @@ import json
 @session_check
 def get_message_record(requests):
     data = json.loads(requests.body)
-    reportId = data['reportId']
+    print("\n\n\n\n", data)
+    reportId = int(data['reportId'])
     # 根据订单号获取订单对象
     report = call_report_table.objects.get(id=reportId)
     # 根据订单对象查找留言记录表，获取属于此订单的留言记录
