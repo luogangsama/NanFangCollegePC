@@ -51,18 +51,8 @@ class MessageConsumer(AsyncWebsocketConsumer):
             }
         )
         print(f'talker: {self.username}, message: {message}')
-
-    # 从房间组接收消息
-    async def chat_message(self, event):
-        message = event['message']
-        print(f'{self.report_id}: {message}')
         utc_now = timezone.now()
         now = timezone.localtime(utc_now)
-
-        # 发送到 WebSocket
-        await self.send(text_data=json.dumps({
-            'message': message
-        }))
         reportId = int(self.report_id)
         # 根据订单号获取订单对象
         report = await sync_to_async(call_report_table.objects.get)(id=reportId)
@@ -73,3 +63,11 @@ class MessageConsumer(AsyncWebsocketConsumer):
             message=message,
             date=now
         )
+
+    # 从房间组接收消息
+    async def chat_message(self, event):
+        message = event['message']
+        # 发送到 WebSocket
+        await self.send(text_data=json.dumps({
+            'message': message
+        }))
