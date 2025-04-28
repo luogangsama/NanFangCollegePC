@@ -55,6 +55,7 @@ class MessageConsumer(AsyncWebsocketConsumer):
     # 从房间组接收消息
     async def chat_message(self, event):
         message = event['message']
+        print(f'{self.report_id}: {message}')
         utc_now = timezone.now()
         now = timezone.localtime(utc_now)
 
