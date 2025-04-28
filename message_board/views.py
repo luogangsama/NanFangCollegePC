@@ -25,11 +25,13 @@ def get_message_record(requests):
         # 遍历留言记录并将其填入响应消息
         username = message_record.user.username
         message = message_record.message
+        date = message_record.date
 
         return_message_record['message_record'].append(
             {
                 'username': username,
-                'messageg': message
+                'messageg': message,
+                'date': date
             }
         )
     return JsonResponse(return_message_record)

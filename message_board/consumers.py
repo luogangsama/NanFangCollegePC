@@ -54,6 +54,7 @@ class MessageConsumer(AsyncWebsocketConsumer):
     # 从房间组接收消息
     async def chat_message(self, event):
         message = event['message']
+        date = event['date'] # 时间格式%Y-%m-%d %H:%M
 
         # 发送到 WebSocket
         await self.send(text_data=json.dumps({
@@ -66,5 +67,6 @@ class MessageConsumer(AsyncWebsocketConsumer):
         await sync_to_async(report_message_board_record.objects.create)(
             report=report,
             user=self.user,
-            message=message
+            message=message,
+            date=date
         )

@@ -49,3 +49,5 @@ class report_message_board_record(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="message_record_User")
     # 留言内容
     message = models.CharField(max_length=500)
+    # 留言时间
+    date = models.CharField(max_length=50)
