@@ -30,7 +30,7 @@ def get_message_record(requests):
         return_message_record['message_record'].append(
             {
                 'username': username,
-                'messageg': message,
+                'message': message,
                 'date': date
             }
         )
