@@ -41,7 +41,7 @@ def signin(request):
             response = Response(message='Success', method='POST')
             return response
         else:
-            logger.error(f'{user.username}登录失败')
+            logger.error(f'{username}登录失败')
             response = Response(message='PASSWORD ERROR', method='POST')
             return response
 
