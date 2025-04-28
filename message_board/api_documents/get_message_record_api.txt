@@ -21,11 +21,13 @@
             'record': [
                 {
                     'username': '张三',
-                    'message': '111'
+                    'message': '111',
+                    'date': '2025-4-28 13:50'
                 },
                 {
                     'username': '李四',
-                    'message': '222'
+                    'message': '222',
+                    'date': '2025-4-28 13:51'
                 },
             ]
         }

@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from asgiref.sync import sync_to_async
 from urllib.parse import parse_qs
 from common.models import call_report_table, report_message_board_record
+from django.utils import timezone
 
 class MessageConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -54,7 +55,7 @@ class MessageConsumer(AsyncWebsocketConsumer):
     # 从房间组接收消息
     async def chat_message(self, event):
         message = event['message']
-        date = event['date'] # 时间格式%Y-%m-%d %H:%M
+        now = timezone.now().strftime('%Y-%m-%d %H:%M') # 时间格式%Y-%m-%d %H:%M
 
         # 发送到 WebSocket
         await self.send(text_data=json.dumps({
@@ -68,5 +69,5 @@ class MessageConsumer(AsyncWebsocketConsumer):
             report=report,
             user=self.user,
             message=message,
-            date=date
+            date=now
         )
