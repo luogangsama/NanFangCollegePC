@@ -55,7 +55,8 @@ class MessageConsumer(AsyncWebsocketConsumer):
     # 从房间组接收消息
     async def chat_message(self, event):
         message = event['message']
-        now = timezone.now().strftime('%Y-%m-%d %H:%M') # 时间格式%Y-%m-%d %H:%M
+        utc_now = timezone.now()
+        now = timezone.localtime(utc_now)
 
         # 发送到 WebSocket
         await self.send(text_data=json.dumps({
