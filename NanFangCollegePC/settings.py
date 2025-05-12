@@ -92,7 +92,7 @@ CHANNEL_LAYERS = {
     "default": {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'COFIG': {
-            'hosts': [('127.0.0.1', 6379)],
+            'hosts': [('gznfpc.cn', 6379)],
         }
     }
 }
