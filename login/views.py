@@ -81,7 +81,7 @@ def forget_password(request):
             user.set_password(new_password)
             user.save()
 
-            logger(f'{user.username}修改密码成功')
+            logger.success(f'{user.username}修改密码成功')
 
             return JsonResponse({'message': '密码修改成功'})
 
