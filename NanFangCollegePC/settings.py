@@ -158,10 +158,13 @@ EMAIL_HOST = "smtp.qq.com" # 服务器
 EMAIL_PORT = 465
 EMAIL_HOST_USER = '3070845578@qq.com'
 EMAIL_FROM = '3070845578@qq.com'
-with open("/root/code.txt", 'r') as f:
-    EMAIL_HOST_PASSWORD = f.readline()
-    EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD[0: -1]
-# EMAIL_HOST_PASSWORD = ''
+try:
+    with open("/root/code.txt", 'r') as f:
+        EMAIL_HOST_PASSWORD = f.readline()
+        EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD[0: -1]
+except :
+    print("请将 code.txt放置于根目录下且确保其内容是正确的授权码，然后重启项目")
+    EMAIL_HOST_PASSWORD = ''
 
 from NanFangCollegePC.loguru_config import logger  # 引入 loguru 的配置文件
 
