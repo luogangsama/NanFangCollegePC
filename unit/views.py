@@ -123,7 +123,7 @@ def save_weather(province, city, adcode):
             'humidity': weather_info['humidity'], # 湿度
             'winddirection': weather_info['windDirection'], # 风向
             'windpower': weather_info['windSpeed'], # 风力
-            'updatetime': now
+            'updateTime': now
         },
         900
         )
@@ -146,6 +146,6 @@ def get_weather(province, city, adcode):
     #     'humidity': humidity,
     #     'winddirection': winddirection,
     #     'windpower': windpower,
-    #     'updatetime': now
+    #     'updateTime': now
     # }
     return {'weather': weather}
