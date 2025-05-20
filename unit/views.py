@@ -112,7 +112,7 @@ def save_weather(province, city, adcode):
     weather_info = response.json()
 
     utc_now = timezone.now()
-    now = timezone.localtime(utc_now)
+    now = datetime.datetime.strptime(timezone.localtime(utc_now), '%Y-%m-%d %H:%M:%S')
 
     # 储存数据
     cache.set(
