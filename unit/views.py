@@ -109,7 +109,7 @@ def save_weather(province, city, adcode):
     url = f'https://cn.apihz.cn/api/tianqi/tqyb.php?id={apiId}&key={apiKey}&sheng={province}&place={city}'
 
     response = requests.get(url)
-    weather_info = response.json()['lives'][0]
+    weather_info = response.json()
 
     # 储存数据
     cache.set(
