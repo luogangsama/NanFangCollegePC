@@ -111,6 +111,9 @@ def save_weather(province, city, adcode):
     response = requests.get(url)
     weather_info = response.json()
 
+    utc_now = timezone.now()
+    now = timezone.localtime(utc_now)
+
     # 储存数据
     cache.set(
         f'{adcode}_weather',
@@ -120,6 +123,7 @@ def save_weather(province, city, adcode):
             'humidity': weather_info['humidity'], # 湿度
             'winddirection': weather_info['windDirection'], # 风向
             'windpower': weather_info['windSpeed'], # 风力
+            'updatetime': now
         },
         900
         )
@@ -130,9 +134,9 @@ def get_weather(province, city, adcode):
     '''
     weather = cache.get(f'{adcode}_weather')
     while weather is None:
-        logger.success(f'缓存中未储存{city}的天气信息，开始尝试通过adcode向高德获取')
+        logger.success(f'缓存中未储存{city}的天气信息，开始尝试通过province,city获取天气')
         save_weather(province, city, adcode)
-        logger.success(f'从高德成功获取{city}的天气信息，存入缓存')
+        logger.success(f'成功获取{city}的天气信息，存入缓存')
         weather = cache.get(f'{adcode}_weather')
     logger.success(f'缓存中成功获取{city}的天气信息:\n{weather}')
     # 结构如下
@@ -142,5 +146,6 @@ def get_weather(province, city, adcode):
     #     'humidity': humidity,
     #     'winddirection': winddirection,
     #     'windpower': windpower,
+    #     'updatetime': now
     # }
     return {'weather': weather}
