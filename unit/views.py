@@ -105,7 +105,7 @@ def save_weather(province, city, adcode):
         apiKey = apiKey[0: -1]
     with open('/root/get_weather_id.txt', 'r') as f:
         apiId = f.readline()
-        apiId = apiKey[0: -1]
+        apiId = apiId[0: -1]
     url = f'https://cn.apihz.cn/api/tianqi/tqyb.php?id={apiId}&key={apiKey}&sheng={province}&place={city}'
 
     response = requests.get(url)
