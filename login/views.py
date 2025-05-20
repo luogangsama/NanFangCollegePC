@@ -35,7 +35,6 @@ def signin(request):
 
         if user is not None:
             login(request=request, user=user)
-            request.session['usertype'] = user.last_name
 
             logger.success(f'{user.username}登录')
             response = Response(message='Success', method='POST')

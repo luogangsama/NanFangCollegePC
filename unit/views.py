@@ -81,16 +81,18 @@ def save_ip(username, ip):
     get_adcode_from_ip_url = f'https://restapi.amap.com/v3/ip?ip={ip}&key={apiKey}'
     response = requests.get(get_adcode_from_ip_url)
     city = response.json()['city']
+    province = response.json()['province']
     adcode = response.json()['adcode']
     cache.set(
         f'{username}_ip',
         {
+            'province': province,
             'city': city,
             'adcode': adcode
         },
         1800)
 
-def save_weather(adcode):
+def save_weather(province, city, adcode):
     '''
     暂存一段时间某地某时刻的天气，有效时间为高德天气api最近一次更新时间开始15分钟
     '''
@@ -98,7 +100,10 @@ def save_weather(adcode):
     with open('/root/get_weather_key.txt', 'r') as f:
         apiKey = f.readline()
         apiKey = apiKey[0: -1]
-    url = f'https://restapi.amap.com/v3/weather/weatherInfo?key={apiKey}&city={adcode}&extensions=base'
+    with open('/root/get_weather_id.txt', 'r') as f:
+        apiId = f.readline()
+        apiId = apiKey[0: -1]
+    url = f'https://cn.apihz.cn/api/tianqi/tqyb.php?id={apiId}&key={apiKey}&sheng={province}&place={city}'
 
     response = requests.get(url)
     weather_info = response.json()['lives'][0]
@@ -108,23 +113,22 @@ def save_weather(adcode):
         f'{adcode}_weather',
         {
             'temperature': weather_info['temperature'], # 温度
-            'weather': weather_info['weather'], # 天气
+            'weather': weather_info['weather1'], # 天气
             'humidity': weather_info['humidity'], # 湿度
-            'winddirection': weather_info['winddirection'], # 风向
-            'windpower': weather_info['windpower'], # 风力
-            'updateTime': weather_info['reporttime'] # 更新时间
+            'winddirection': weather_info['windDirection'], # 风向
+            'windpower': weather_info['windSpeed'], # 风力
         },
         900
         )
 
-def get_weather(city, adcode):
+def get_weather(province, city, adcode):
     '''
     根据adcode读取先前储存在缓存中的天气信息
     '''
     weather = cache.get(f'{adcode}_weather')
     while weather is None:
         logger.success(f'缓存中未储存{city}的天气信息，开始尝试通过adcode向高德获取')
-        save_weather(adcode)
+        save_weather(province, city, adcode)
         logger.success(f'从高德成功获取{city}的天气信息，存入缓存')
         weather = cache.get(f'{adcode}_weather')
     logger.success(f'缓存中成功获取{city}的天气信息:\n{weather}')
@@ -135,6 +139,5 @@ def get_weather(city, adcode):
     #     'humidity': humidity,
     #     'winddirection': winddirection,
     #     'windpower': windpower,
-    #     'updateTime': updateTime
     # }
     return {'weather': weather}
