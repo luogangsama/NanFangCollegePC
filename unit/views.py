@@ -62,9 +62,10 @@ def user_get_city_and_weather(request):
         return JsonResponse({'message': 'Unable obtain location info'}, status=500)
 
     logger.success(f'缓存中成功获取{user.username}的位置信息: {IP}')
+    province = IP['province']
     city = IP['city']
     adcode = IP['adcode']
-    weather = get_weather(city, adcode)
+    weather = get_weather(province, city, adcode)
     return JsonResponse({
         'message': 'Success',
         'IP': {
