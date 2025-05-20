@@ -77,7 +77,9 @@ def save_ip(username, ip):
     '''
     存储用户的IP，有效时间30分钟
     '''
-    apiKey = '7be7dff3729983328f5bbc4815cd5022'
+    with open('/root/get_user_ip_info_api_key.txt', 'r') as f:
+        apiKey = f.readline()
+        apiKey = apiKey[0: -1]
     get_adcode_from_ip_url = f'https://restapi.amap.com/v3/ip?ip={ip}&key={apiKey}'
     response = requests.get(get_adcode_from_ip_url)
     city = response.json()['city']
