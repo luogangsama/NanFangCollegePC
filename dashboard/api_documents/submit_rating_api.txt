@@ -1,0 +1,57 @@
+概述
+用户对已完成的服务订单进行评分和评价，提交订单评价信息
+请求URL
+https://gznfpc.cn/api/dashboard/submit_rating/
+请求方式
+POST
+参数
+参数名 类型 必填 说明
+reportId string 是 订单ID
+rating number 是 评分值(1-5)
+comment string 否 评价内容
+请求示例
+{
+"reportId": "202501010001",
+"rating": 5,
+"comment": "服务很好，志愿者态度亲切，问题得到了迅速解决"
+}
+响应示例
+sessionid成功验证，评分提交成功
+{
+"message": "Success",
+"data": {
+"reportId": "202501010001",
+"rating": 5,
+"submitTime": "2025-01-01 18:30:45"
+}
+}
+参数错误
+{
+"message": "Invalid parameters",
+"error": "评分值必须在1-5之间"
+}
+订单不存在
+{
+"message": "Report not found"
+}
+订单状态错误（已评价或未完成）
+{
+"message": "Invalid report status"
+}
+sessionid过期
+{
+"message": "Session has expired"
+}
+sessionid不存在
+{
+"message": "Invalid session"
+}
+未携带cookies
+{
+"message": "No sessionid cookie"
+}
+备注
+评分范围为1-5，其中1分表示非常不满意，5分表示非常满意
+评价内容为可选字段，最多支持200个字符
+订单只能评价一次，重复提交评价将返回错误
+只有已完成的订单才能提交评价

@@ -398,7 +398,7 @@ def submit_rating(request):
     comment = data['comment']
     try:
         report = call_report_table.objects.get(pk=reportId)
-        print(report.rating)
+        logger.success(f'{reportId}订单已完成，评分{rating}')
         if report.rating != '0':
             return JsonResponse({'message': 'Invalid report status'})
         report.rating = rating
