@@ -42,6 +42,11 @@ class call_report_table(models.Model):
     # 维修人员姓名
     workerName = models.ForeignKey(User, on_delete=models.CASCADE, related_name='call_report_table_profile_worker', null=True, blank=True)
 
+    # 评分
+    rating = models.CharField(max_length=1, default='0')
+    # 评价
+    comment = models.CharField(max_length=200, default='')
+
 class report_message_board_record(models.Model):
     # 订单
     report = models.ForeignKey(call_report_table, on_delete=models.CASCADE, related_name="message_reportId")

@@ -386,3 +386,23 @@ def get_report_of_same_day(request):
         })
     logger.success(f'{user.username}管理的订单:\n{return_data["reports"]}')
     return JsonResponse(return_data, status=200)
+
+@session_check
+def submit_rating(request):
+    data = json.loads(request.body)
+    reportId = data['reportId']
+    rating = data['rating']
+    if eval(rating) > 5 or eval(rating) < 0:
+        return JsonResponse({'message': 'Invalid parameters'}, status=400)
+
+    comment = data['comment']
+    try:
+        report = call_report_table.objects.get(pk=reportId)
+        if report.rating != '0' or report.status != '2':
+            return JsonResponse({'message': 'Invalid report status'})
+        report.rating = rating
+        report.comment = comment
+        report.save()
+        return JsonResponse({'message': 'Success'})
+    except:
+        return JsonResponse({'message': 'Report not found'}, status=400)
