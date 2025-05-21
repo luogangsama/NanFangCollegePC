@@ -171,15 +171,8 @@ def save_user_info(request):
     #电话号码的部分的基本逻辑：若消息体中没有phoneNumber则先查找一下UserProfile表中是否有这个用户对应的号码，
     #若是有则直接拿出来赋值给new_phone_number，这样更新后号码不变，若是查找不到，就预设一个None
 # ===============================================================================
-    # 确保新名称未被占用
-    try: 
-        # 订正可能出现的新旧名相同的情况，后续应当修改实现，这里是临时打个补丁
-        if new_name == get_user_from_sessionid(sessionid=sessionid).username:
-            raise User.DoesNotExist('new name == old name')
-        # 确保新名称未被占用
-        User.objects.get(username=new_name)
-        return JsonResponse({'message': 'This user is existed'})
-    except User.DoesNotExist:
+    # 判断可能出现的新旧名相同的情况
+    if new_name == get_user_from_sessionid(sessionid=sessionid).username:
         # 首先更改auth_user表中的username
         user = User.objects.get(username=get_user_from_sessionid(sessionid=sessionid).username)
         user.username = new_name
@@ -189,6 +182,18 @@ def save_user_info(request):
         userProfile = UserProfile.objects.get(user=user)
         userProfile.phoneNumber = new_phone_number
         userProfile.save()
+    else:
+        if len(User.objects.filter(username=new_name)) > 0:
+            return JsonResponse({'message': 'This user is existed'})
+        user = User.objects.get(username=get_user_from_sessionid(sessionid=sessionid).username)
+        user.username = new_name
+        user.save()
+
+        # 然后根据新user去更改phone number
+        userProfile = UserProfile.objects.get(user=user)
+        userProfile.phoneNumber = new_phone_number
+        userProfile.save()
+        
     # 登出再登入（刷新sessionid）
     logout(request=request)
     login(request=request, user=user)
