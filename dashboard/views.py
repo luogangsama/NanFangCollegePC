@@ -392,7 +392,7 @@ def submit_rating(request):
     data = json.loads(request.body)
     reportId = data['reportId']
     rating = data['rating']
-    if eval(rating) > 5 or eval(rating) < 0:
+    if rating > 5 or rating < 0:
         return JsonResponse({'message': 'Invalid parameters'}, status=400)
 
     comment = data['comment']
@@ -403,6 +403,6 @@ def submit_rating(request):
         report.rating = rating
         report.comment = comment
         report.save()
-        return JsonResponse({'message': 'Success'})
+        return JsonResponse({'message': 'Success'}, status=200)
     except:
         return JsonResponse({'message': 'Report not found'}, status=400)
