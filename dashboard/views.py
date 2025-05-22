@@ -410,7 +410,6 @@ def submit_rating(request):
         report.rating = rating
         report.comment = comment
         report.save()
-        logger.success(f'{reportId}订单已完成，评分{rating}')
         return JsonResponse({'message': 'Success'}, status=200)
     except:
         return JsonResponse({'message': 'Report not found'}, status=400)
