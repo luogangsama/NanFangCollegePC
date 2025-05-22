@@ -403,12 +403,14 @@ def submit_rating(request):
     comment = data['comment']
     try:
         report = call_report_table.objects.get(pk=reportId)
-        logger.success(f'{reportId}订单已完成，评分{rating}')
+        print(report)
+        print(type(report))
         if report.rating != '0':
             return JsonResponse({'message': 'Invalid report status'})
         report.rating = rating
         report.comment = comment
         report.save()
+        logger.success(f'{reportId}订单已完成，评分{rating}')
         return JsonResponse({'message': 'Success'}, status=200)
     except:
         return JsonResponse({'message': 'Report not found'}, status=400)
