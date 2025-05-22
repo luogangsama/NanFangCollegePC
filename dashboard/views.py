@@ -50,7 +50,6 @@ def call_report(request):
     userPhoneNumber = data['userPhoneNumber']
     address = data['address']
     issue = data['issue']
-    notes = data['notes']
     date = data['date'] # 时间格式%Y-%m-%d %H:%M
     weekday = str(datetime.datetime.strptime(date, '%Y-%m-%d %H:%M').weekday() + 1)
     call_date = data['call_date'] # 订单提交的时间
@@ -60,7 +59,6 @@ def call_report(request):
         userPhoneNumber=userPhoneNumber,
         address=address,
         issue=issue,
-        notes=notes,
         date=date,
         call_date=call_date,
         weekday=weekday,

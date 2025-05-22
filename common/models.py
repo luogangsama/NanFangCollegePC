@@ -28,8 +28,6 @@ class call_report_table(models.Model):
     address = models.CharField(max_length=50)
     # 问题
     issue = models.CharField(max_length=200)
-    # 备注
-    notes = models.CharField(max_length=200)
     # 预约维修时间
     date = models.CharField(max_length=50)
     # 预约时间所对应的星期
