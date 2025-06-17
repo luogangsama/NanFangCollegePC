@@ -2,7 +2,8 @@ from django.shortcuts import render
 from django.http import JsonResponse
 
 from unit.views import session_check
-from common.models import report_message_board_record, call_report_table
+from common.models import report_message_board_record, call_report_table, User
+from django.db.models import Q
 import json
 # Create your views here.
 
@@ -35,3 +36,30 @@ def get_message_record(requests):
             }
         )
     return JsonResponse(return_message_record)
+
+@session_check
+def get_message_list(requests):
+    body = json.loads(requests.body)
+    userId = body['userId']
+    user = User.objects.get(id=userId)
+    report_infos = call_report_table.objects.all().order_by('-pk').filter(
+        Q(workerName=user) | Q(user=user)
+        )
+    return_report_info = {
+        'message': 'Success',
+        'report_info':[]
+    }
+    for report_info in report_infos:
+        issue = report_info.issue
+        status = report_info.status
+        date = report_info.date # 预约时间
+        report_id = report_info.id
+
+        return_report_info['report_info'].append({
+            'reportId': report_id,
+            'issue': issue,
+            'status': status,
+            'date': date,
+        })
+    return JsonResponse(return_report_info, status=200)
+
