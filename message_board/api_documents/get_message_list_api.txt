@@ -1,0 +1,63 @@
+概述：
+  根据志愿者的用户id获取聊天列表
+请求url：
+    https://localhost/api/message_board/get_message_list/
+请求方式：
+    POST
+参数：
+    userId
+请求示例：
+{
+    'userId': '114'   
+}
+响应示例：
+    sessionid成功验证：
+    成功获取记录
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    {
+        'message': 'Success',
+        'reports': [
+            {
+                'reportId': report.id,
+                'issue': report.issue,
+                'status': report.status,
+                'date': report.date,
+            },
+            {
+                'reportId': report.id,
+                'issue': report.issue,
+                'status': report.status,
+                'date': report.date,
+            },
+            {
+                'reportId': report.id,
+                'issue': report.issue,
+                'status': report.status,
+                'date': report.date,
+            },
+        ]
+    }
+
+
+错误响应：
+    sessionid过期：
+    HTTP/1.1 401 Unauthorized
+    Content-Type: application/json
+    {
+        'message': 'Session has expired'
+    }
+
+    sessionid不存在：
+    HTTP/1.1 401 Unauthorized
+    Content-Type: application/json
+    {
+        'message': 'Invalid session'
+    }
+
+    无cookies:
+    HTTP/1.1 400 Bad Request
+    Content-Type: application/json
+    {
+        'message': 'No sessionid cookie'
+    }
