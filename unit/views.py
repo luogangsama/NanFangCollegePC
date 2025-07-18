@@ -161,4 +161,5 @@ def __get_client_ip(request):
         ip = x_forwarded_for.split(',')[0]
     else:
         ip = request.META.get('HTTP_X_REAL_IP', request.META.get('REMOTE_ADDR'))
+    logger.success(f'获取到IP: {ip}')
     return ip
