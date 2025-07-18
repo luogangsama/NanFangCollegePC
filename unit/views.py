@@ -161,5 +161,5 @@ def __get_client_ip(request):
     else:
         # 直接获取REMOTE_ADDR
         ip = request.META.get('REMOTE_ADDR')
-    
+    print(f'获取到IP{ip}')
     return ip
