@@ -153,14 +153,12 @@ def get_weather(province, city, adcode):
     return {'weather': weather}
 
 def __get_client_ip(request):
-    # 获取HTTP_X_FORWARDED_FOR头部（如果有代理）
+    """
+    获取客户端的真实IP地址
+    """
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    
     if x_forwarded_for:
-        # 可能有多个IP，第一个是真实IP
         ip = x_forwarded_for.split(',')[0]
     else:
-        # 直接获取REMOTE_ADDR
-        ip = request.META.get('REMOTE_ADDR')
-    logger.success(f'获取到IP{ip}')
+        ip = request.META.get('HTTP_X_REAL_IP', request.META.get('REMOTE_ADDR'))
     return ip
