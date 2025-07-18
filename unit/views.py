@@ -57,7 +57,8 @@ def user_get_city_and_weather(request):
     # 种情况，额外给此用户一次获取地址的机会
     if len(IP['adcode']) == 0 or len(IP['city']) == 0:
         logger.warning(f'用户{user.username}的位置信息为空，再次尝试解析IP并存储位置信息')
-        save_ip(user.username, json.loads(request.body)['ip'])
+        # save_ip(user.username, json.loads(request.body)['ip'])
+        save_ip(user.username, __get_client_ip(request))
     if len(IP['adcode']) == 0 or len(IP['city']) == 0:
         logger.error(f'依然无法获取{user.username}的位置信息，强制返回，位置信息于缓存中将储存为空')
         return JsonResponse({'message': 'Unable obtain location info'}, status=500)
