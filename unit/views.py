@@ -47,7 +47,8 @@ def user_get_city_and_weather(request):
     IP = cache.get(f'{user.username}_ip')
     while IP is None:
         logger.success(f'缓存中未存储{user.username}的位置信息，开始尝试通过解析IP地址获取')
-        save_ip(user.username, json.loads(request.body)['ip'])
+        # save_ip(user.username, json.loads(request.body)['ip'])
+        save_ip(user.username, __get_client_ip(request))
         IP = cache.get(f'{user.username}_ip')
 
     # 部分使用流量的用户获取的地址和adcode是空列表
@@ -149,3 +150,16 @@ def get_weather(province, city, adcode):
     #     'updateTime': now
     # }
     return {'weather': weather}
+
+def __get_client_ip(request):
+    # 获取HTTP_X_FORWARDED_FOR头部（如果有代理）
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    
+    if x_forwarded_for:
+        # 可能有多个IP，第一个是真实IP
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        # 直接获取REMOTE_ADDR
+        ip = request.META.get('REMOTE_ADDR')
+    
+    return ip
