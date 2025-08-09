@@ -173,11 +173,11 @@ def validMessageFromWeiXin(func):
     '''
     def wrapper(request, *args, **kwargs):
         try:
+            token_path = '/root/weixin_token.txt'
             with open(token_path, 'r') as f:
                 '''
                 weixin_token.txt中的内容为微信公众号开放平台中手动配置的值
                 '''
-                token_path = '/root/weixin_token.txt'
                 token = f.readline()
                 token = token[0:-1]
         except Exception as e:
