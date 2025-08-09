@@ -190,7 +190,9 @@ def validMessageFromWeiXin(func):
         echostr = request.GET.get('echostr', '')
 
         # 计算签名
-        originalStr = ''.join([token, timestamp, nonce].sort())
+        originalStrList = [token, timestamp, nonce]
+        originalStrList.sort()
+        originalStr = ''.join(originalStrList)
         sign = hashlib.sha1(originalStr.encode('utf-8')).hexdigest()
 
         # 判断签名是否一致
