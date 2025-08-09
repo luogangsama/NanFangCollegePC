@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib.sessions.models import Session
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.utils.timezone import now
 from common.models import call_report_table
@@ -14,6 +14,8 @@ from loguru import logger
 import hashlib
 import json
 import datetime
+from lxml import etree
+import time
 
 
 from SMS.views import send_verification_email
@@ -414,13 +416,47 @@ def submit_rating(request):
     except:
         return JsonResponse({'message': 'Report not found'}, status=400)
 
+
+def parse_wechat_message(request):
+    """解析微信XML消息"""
+    xml_data = request.body
+    xml_tree = etree.fromstring(xml_data)
+    return {
+        "to_user": xml_tree.find("ToUserName").text,
+        "from_user": xml_tree.find("FromUserName").text,
+        "msg_type": xml_tree.find("MsgType").text,
+        "content": xml_tree.find("Content").text if xml_tree.find("Content") is not None else "",
+        "msg_id": xml_tree.find("MsgId").text
+    }
+
+def build_text_response(to_user, from_user, content):
+    """构造文本响应XML"""
+    return f"""
+    <xml>
+        <ToUserName><![CDATA[{to_user}]]></ToUserName>
+        <FromUserName><![CDATA[{from_user}]]></FromUserName>
+        <CreateTime>{int(time.time())}</CreateTime>
+        <MsgType><![CDATA[text]]></MsgType>
+        <Content><![CDATA[{content}]]></Content>
+    </xml>
+    """
+
 @validMessageFromWeiXin
 def weixinTest(request):
-    logger.info("微信接入成功")
-    logger.info(f"请求方法: {request.method}")
-    logger.info(f"请求路径: {request.path}")
-    logger.info(f"请求参数 (GET): {request.GET}")
-    logger.info(f"请求参数 (POST): {request.POST}")
-    logger.info(f"请求头部: {request.headers}")
-    logger.info(f"请求体 (原始): {request.body}")
-    return JsonResponse({'message': 'weixin test success'})
+    if request.method == "POST":
+        try:
+            msg = parse_wechat_message(request)
+            logger.info(f"收到消息: {msg['content']}")
+
+            # 基础回复（echo模式）
+            reply_content = f"已收到：{msg['content']}"
+            
+            return HttpResponse(
+                build_text_response(msg['to_user'], msg['from_user'], reply_content),
+                content_type="application/xml"
+            )
+        except Exception as e:
+            logger.error(f"处理消息失败: {e}")
+            return HttpResponse("ERROR", status=500)
+    else:
+        return HttpResponse("请使用POST请求", status=405)
