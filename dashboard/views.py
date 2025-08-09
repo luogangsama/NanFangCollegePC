@@ -417,4 +417,10 @@ def submit_rating(request):
 @validMessageFromWeiXin
 def weixinTest(request):
     logger.info("微信接入成功")
+    logger.info(f"请求方法: {request.method}")
+    logger.info(f"请求路径: {request.path}")
+    logger.info(f"请求参数 (GET): {request.GET}")
+    logger.info(f"请求参数 (POST): {request.POST}")
+    logger.info(f"请求头部: {request.headers}")
+    logger.info(f"请求体 (原始): {request.body}")
     return JsonResponse({'message': 'weixin test success'})
