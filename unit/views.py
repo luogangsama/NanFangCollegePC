@@ -200,8 +200,10 @@ def validMessageFromWeiXin(func):
             logger.error(f'非法来源，请求参数为: {request.GET}')
             HttpResponse("Forbidden")
         else: 
-            HttpResponse(echostr)
-            return func(request, *args, **kwargs)
+            if echostr:
+                return HttpResponse(echostr)
+            else:
+                return func(request, *args, **kwargs)
 
     return wrapper
 
