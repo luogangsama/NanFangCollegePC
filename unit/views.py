@@ -1,14 +1,13 @@
 from django.shortcuts import render
 from django.contrib.sessions.models import Session
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.utils.timezone import now
 from django.core.cache import cache
 from django.contrib.auth.models import User
 from loguru import logger
-import json
-import datetime
 import requests
+import hashlib
 
 def session_check(func):
     def wrapper(request, *args, **kwargs):
@@ -17,7 +16,7 @@ def session_check(func):
             return JsonResponse({'message': 'No sessionid cookie'}, status=400)
         try:
             session = Session.objects.get(session_key=sessionid)
-            session_data = session.get_decoded()
+            # session_data = session.get_decoded()
             if session.expire_date <= timezone.now():
                 return JsonResponse({'message': 'Session has expired'}, status=401)
         except Session.DoesNotExist:
@@ -163,3 +162,44 @@ def __get_client_ip(request):
         ip = request.META.get('HTTP_X_REAL_IP', request.META.get('REMOTE_ADDR'))
     logger.success(f'获取到IP: {ip}')
     return ip
+
+def validMessageFromWeiXin(func):
+    '''
+    验证消息是否来自微信服务器
+    params:
+        func: 被装饰函数
+    returns:
+        bool: 是否合法
+    '''
+    def wrapper(request, *args, **kwargs):
+        try:
+            with open(token_path, 'r') as f:
+                '''
+                weixin_token.txt中的内容为微信公众号开放平台中手动配置的值
+                '''
+                token_path = '/root/weixin_token.txt'
+                token = f.readline()
+                token = token[0:-1]
+        except Exception as e:
+            logger.error(e)
+            token = ''
+        # 获取请求参数
+        timestamp = request.GET.get('timestamp', '')
+        nonce = request.GET.get('nonce', '')
+        signature = request.GET.get('signature', '')
+        echostr = request.GET.get('echostr', '')
+
+        # 计算签名
+        originalStr = ''.join([token, timestamp, nonce].sort())
+        sign = hashlib.sha1(originalStr.encode('utf-8')).hexdigest()
+
+        # 判断签名是否一致
+        if sign != signature:
+            logger.error(f'非法来源，请求参数为: {request.GET}')
+            HttpResponse("Forbidden")
+        else: 
+            HttpResponse(echostr)
+            return func(request, *args, **kwargs)
+
+    return wrapper
+

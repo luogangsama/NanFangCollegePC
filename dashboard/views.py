@@ -19,7 +19,7 @@ import datetime
 from SMS.views import send_verification_email
 from SMS.views import verify_code
 
-from unit.views import session_check, get_user_from_sessionid
+from unit.views import session_check, get_user_from_sessionid, validMessageFromWeiXin
 
 # Create your views here.
 
@@ -413,3 +413,7 @@ def submit_rating(request):
         return JsonResponse({'message': 'Success'}, status=200)
     except:
         return JsonResponse({'message': 'Report not found'}, status=400)
+
+@validMessageFromWeiXin
+def weixinTest(request):
+    logger("微信接入成功")
