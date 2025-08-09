@@ -416,4 +416,4 @@ def submit_rating(request):
 
 @validMessageFromWeiXin
 def weixinTest(request):
-    logger("微信接入成功")
+    logger.info("微信接入成功")
