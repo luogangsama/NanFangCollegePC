@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from loguru import logger
 import requests
 import hashlib
+import json
 
 def session_check(func):
     def wrapper(request, *args, **kwargs):
@@ -208,3 +209,14 @@ def validMessageFromWeiXin(func):
 
     return wrapper
 
+
+def getAccessToken(AppID:str, AppSecret:str):
+    '''
+    获取accessToken
+    GET https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET 
+    '''
+    url = f'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={AppID}&secret={AppSecret}'
+    response = requests.get(url)
+    print(response.text)
+    accessToken = json.loads(response.text)['access_token']
+    return accessToken
