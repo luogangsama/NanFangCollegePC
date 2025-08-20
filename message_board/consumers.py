@@ -64,13 +64,13 @@ class MessageConsumer(AsyncWebsocketConsumer):
             date=now
         )
 
-#     # 从房间组接收消息
-#     async def chat_message(self, event):
-#         message = event['message']
-#         # 发送到 WebSocket
-#         await self.send(text_data=json.dumps({
-#             'message': message
-#         }))
+    # 从房间组接收消息
+    async def chat_message(self, event):
+        message = event['message']
+        # 发送到 WebSocket
+        await self.send(text_data=json.dumps({
+            'message': message
+        }))
 
 # 测试代码
 class MessageConsumer(AsyncWebsocketConsumer):
