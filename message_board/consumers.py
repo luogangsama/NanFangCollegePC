@@ -73,53 +73,53 @@ class MessageConsumer(AsyncWebsocketConsumer):
         }))
 
 # 测试代码
-class MessageConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
-        user = '测试'
-        query_string = self.scope["query_string"].decode()
-        query_params = parse_qs(query_string)
+# class MessageConsumer(AsyncWebsocketConsumer):
+#     async def connect(self):
+#         user = '测试'
+#         query_string = self.scope["query_string"].decode()
+#         query_params = parse_qs(query_string)
 
-        self.report_id = query_params.get("report_id", [None])[0]
+#         self.report_id = query_params.get("report_id", [None])[0]
 
-        self.user = user
-        self.username = user
-        self.room_group_name = f'message_{self.report_id}'
+#         self.user = user
+#         self.username = user
+#         self.room_group_name = f'message_{self.report_id}'
 
-        # 加入房间组
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name
-        )
+#         # 加入房间组
+#         await self.channel_layer.group_add(
+#             self.room_group_name,
+#             self.channel_name
+#         )
 
-        await self.accept()
+#         await self.accept()
 
-    async def disconnect(self, close_code):
-        # 离开房间组
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+#     async def disconnect(self, close_code):
+#         # 离开房间组
+#         await self.channel_layer.group_discard(
+#             self.room_group_name,
+#             self.channel_name
+#         )
 
-    # 接收 WebSocket 消息
-    async def receive(self, text_data):
-        message = eval(text_data)['message']
-        # 发送到房间组
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'message': {
-                    'username': self.username,
-                    'message': message
-                }
-            }
-        )
-        print(f'talker: {self.username}, message: {message}')
+#     # 接收 WebSocket 消息
+#     async def receive(self, text_data):
+#         message = eval(text_data)['message']
+#         # 发送到房间组
+#         await self.channel_layer.group_send(
+#             self.room_group_name,
+#             {
+#                 'type': 'chat_message',
+#                 'message': {
+#                     'username': self.username,
+#                     'message': message
+#                 }
+#             }
+#         )
+#         print(f'talker: {self.username}, message: {message}')
 
-    # 从房间组接收消息
-    async def chat_message(self, event):
-        message = event['message']
-        # 发送到 WebSocket
-        await self.send(text_data=json.dumps({
-            'message': message
-        }))
+#     # 从房间组接收消息
+#     async def chat_message(self, event):
+#         message = event['message']
+#         # 发送到 WebSocket
+#         await self.send(text_data=json.dumps({
+#             'message': message
+#         }))
