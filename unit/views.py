@@ -15,6 +15,9 @@ if __name__ != '__main__':
     import uuid
 
 def session_check(func):
+    '''
+    验证用户是否以登录状态发起请求
+    '''
     def wrapper(request, *args, **kwargs):
         sessionid = request.COOKIES.get('sessionid')
         if not sessionid:
@@ -52,7 +55,7 @@ def user_get_city_and_weather(request):
     while IP is None:
         logger.success(f'缓存中未存储{user.username}的位置信息，开始尝试通过解析IP地址获取')
         # save_ip(user.username, json.loads(request.body)['ip'])
-        save_ip(user.username, __get_client_ip(request))
+        save_ip(user.username, _get_client_ip(request))
         IP = cache.get(f'{user.username}_ip')
 
     # 部分使用流量的用户获取的地址和adcode是空列表
@@ -62,7 +65,7 @@ def user_get_city_and_weather(request):
     if len(IP['adcode']) == 0 or len(IP['city']) == 0:
         logger.warning(f'用户{user.username}的位置信息为空，再次尝试解析IP并存储位置信息')
         # save_ip(user.username, json.loads(request.body)['ip'])
-        save_ip(user.username, __get_client_ip(request))
+        save_ip(user.username, _get_client_ip(request))
     if len(IP['adcode']) == 0 or len(IP['city']) == 0:
         logger.error(f'依然无法获取{user.username}的位置信息，强制返回，位置信息于缓存中将储存为空')
         return JsonResponse({'message': 'Unable obtain location info'}, status=500)
@@ -79,19 +82,30 @@ def user_get_city_and_weather(request):
         },
         'weather': weather
     }, status=200)
-    
-def save_ip(username, ip):
+
+def _get_user_ip_info_api_key(dir: str='/root')->str:
     '''
-    存储用户的IP，有效时间30分钟
+    返回通过ip查询adcode所需要携带的apiKey
     '''
-    with open('/root/get_user_ip_info_api_key.txt', 'r') as f:
-        apiKey = f.readline()
-        apiKey = apiKey[0: -1]
+    with open(f'{dir}/get_user_ip_info_api_key.txt', 'r') as f:
+        apiKey = f.readline()[0: -1]
+        return apiKey
+
+def _get_adcode_by_ip(ip: str, apiKey: str)->tuple[str, str, str]:
     get_adcode_from_ip_url = f'https://restapi.amap.com/v3/ip?ip={ip}&key={apiKey}'
     response = requests.get(get_adcode_from_ip_url)
     city = response.json()['city']
     province = response.json()['province']
     adcode = response.json()['adcode']
+
+    return adcode, province, city
+    
+def save_ip(username, ip):
+    '''
+    存储用户的IP，有效时间30分钟
+    '''
+    apiKey = _get_user_ip_info_api_key(dir='/root')
+    adcode, province, city = _get_adcode_by_ip(ip=ip, apiKey=apiKey)
     cache.set(
         f'{username}_ip',
         {
@@ -101,38 +115,59 @@ def save_ip(username, ip):
         },
         1800)
 
+def _get_weather_api_id_and_key(dir: str='/root')->tuple[str, str]:
+    '''
+    获取通过请求获取当地天气时需携带的apiId与apiKey
+    '''
+    with open(f'{dir}/get_weather_id.txt', 'r') as f:
+        apiId = f.readline()[0: -1]
+    with open(f'{dir}/get_weather_key.txt', 'r') as f:
+        apiKey = f.readline()[0: -1]
+
+    return apiId, apiKey
+
+def _get_weather(apiId:str, apiKey:str, province:str, city:str)->dict:
+    '''
+    根据参数发起请求以获取天气信息
+    '''
+    url = f'https://cn.apihz.cn/api/tianqi/tqyb.php?id={apiId}&key={apiKey}&sheng={province}&place={city}'
+    response = requests.get(url)
+    weather_info = response.json()
+
+    return weather_info
+
+
+
 def save_weather(province, city, adcode):
     '''
     暂存一段时间某地某时刻的天气，有效时间为高德天气api最近一次更新时间开始15分钟
     '''
-    # apiKey = '7be7dff3729983328f5bbc4815cd5022'
-    with open('/root/get_weather_key.txt', 'r') as f:
-        apiKey = f.readline()
-        apiKey = apiKey[0: -1]
-    with open('/root/get_weather_id.txt', 'r') as f:
-        apiId = f.readline()
-        apiId = apiId[0: -1]
-    url = f'https://cn.apihz.cn/api/tianqi/tqyb.php?id={apiId}&key={apiKey}&sheng={province}&place={city}'
-
-    response = requests.get(url)
-    weather_info = response.json()
-
+    apiId, apiKey = _get_weather_api_id_and_key()
     utc_now = timezone.now()
     now = timezone.localtime(utc_now).strftime('%Y-%m-%d %H:%M:%S')
 
+    weather_info = _get_weather(
+        apiId=apiId,
+        apiKey=apiKey,
+        province=province,
+        city=city
+    )
     # 储存数据
-    cache.set(
-        f'{adcode}_weather',
-        {
-            'temperature': weather_info['nowinfo']['temperature'], # 温度
-            'weather': weather_info['weather1'], # 天气
-            'humidity': weather_info['nowinfo']['humidity'], # 湿度
-            'winddirection': weather_info['nowinfo']['windDirection'], # 风向
-            'windpower': weather_info['nowinfo']['windSpeed'], # 风力
-            'updateTime': now
-        },
-        900
-        )
+    try:
+        cache.set(
+            f'{adcode}_weather',
+            {
+                'temperature': weather_info['nowinfo']['temperature'], # 温度
+                'weather': weather_info['weather1'], # 天气
+                'humidity': weather_info['nowinfo']['humidity'], # 湿度
+                'winddirection': weather_info['nowinfo']['windDirection'], # 风向
+                'windpower': weather_info['nowinfo']['windSpeed'], # 风力
+                'updateTime': now
+            },
+            900
+            )
+    except KeyError:
+        raise("第三方天气接口返回的天气信息结构发生变化，请及时修复")
 
 def get_weather(province, city, adcode):
     '''
@@ -156,7 +191,7 @@ def get_weather(province, city, adcode):
     # }
     return {'weather': weather}
 
-def __get_client_ip(request):
+def _get_client_ip(request):
     """
     获取客户端的真实IP地址
     """
@@ -165,7 +200,8 @@ def __get_client_ip(request):
         ip = x_forwarded_for.split(',')[0]
     else:
         ip = request.META.get('HTTP_X_REAL_IP', request.META.get('REMOTE_ADDR'))
-    logger.success(f'获取到IP: {ip}')
+    if ip == 'localhost' or ip == '127.0.0.1':
+        raise("获取到用户ip为本机回环地址，请留意nginx等反向代理的配置")
     return ip
 
 def validMessageFromWeiXin(func):
@@ -267,40 +303,9 @@ class ImageConverter:
 
 if __name__ == '__main__':
     import requests
-    ip = ''
-    with open('/home/luoenhao/Documents/get_user_ip_info_api_key.txt', 'r') as f:
-        apiKey = f.readline()
-        apiKey = apiKey[0: -1]
-    get_adcode_from_ip_url = f'https://restapi.amap.com/v3/ip?ip={ip}&key={apiKey}'
-    response = requests.get(get_adcode_from_ip_url)
-    city = response.json()['city']
-    province = response.json()['province']
-    adcode = response.json()['adcode']
-    print(city, ', ', province, ', ', adcode)
-    with open('/home/luoenhao/Documents/get_weather_key.txt', 'r') as f:
-        apiKey = f.readline()
-        apiKey = apiKey[0: -1]
-    with open('/home/luoenhao/Documents/get_weather_id.txt', 'r') as f:
-        apiId = f.readline()
-        apiId = apiId[0: -1]
-    url = f'https://cn.apihz.cn/api/tianqi/tqyb.php?id={apiId}&key={apiKey}&sheng={province}&place={city}'
 
-    response = requests.get(url)
-    weather_info = response.json()
-    print(weather_info)
-
-    time_now = ''
-
-    # 储存数据
-    data = (
-        f'{adcode}_weather',
-        {
-            'temperature': weather_info['nowinfo']['temperature'], # 温度
-            'weather': weather_info['weather1'], # 天气
-            'humidity': weather_info['nowinfo']['humidity'], # 湿度
-            'winddirection': weather_info['nowinfo']['windDirection'], # 风向
-            'windpower': weather_info['nowinfo']['windSpeed'], # 风力
-            'updateTime': time_now
-        },
-        900
-        )
+    apiKey = _get_user_ip_info_api_key('/home/luoenhao/Documents')
+    ip = '120.197.18.205'
+    adcode, province, city = _get_adcode_by_ip(ip=ip, apiKey=apiKey)
+    apiId, getWeatherKey = _get_weather_api_id_and_key('/home/luoenhao/Documents')
+    print(_get_weather(apiId=apiId, apiKey=getWeatherKey, province=province, city=city))
