@@ -87,17 +87,22 @@ def _get_user_ip_info_api_key()->str:
     with open('/root/get_user_ip_info_api_key.txt', 'r') as f:
         apiKey = f.readline()[0: -1]
         return apiKey
+
+def _get_adcode_by_ip(ip: str, apiKey: str)->tuple[str, str, str]:
+    get_adcode_from_ip_url = f'https://restapi.amap.com/v3/ip?ip={ip}&key={apiKey}'
+    response = requests.get(get_adcode_from_ip_url)
+    city = response.json()['city']
+    province = response.json()['province']
+    adcode = response.json()['adcode']
+
+    return adcode, province, city
     
 def save_ip(username, ip):
     '''
     存储用户的IP，有效时间30分钟
     '''
     apiKey = _get_user_ip_info_api_key()
-    get_adcode_from_ip_url = f'https://restapi.amap.com/v3/ip?ip={ip}&key={apiKey}'
-    response = requests.get(get_adcode_from_ip_url)
-    city = response.json()['city']
-    province = response.json()['province']
-    adcode = response.json()['adcode']
+    adcode, province, city = _get_adcode_by_ip(ip=ip, apiKey=apiKey)
     cache.set(
         f'{username}_ip',
         {
@@ -107,25 +112,43 @@ def save_ip(username, ip):
         },
         1800)
 
+def _get_weather_api_id_and_key()->tuple[str, str]:
+    '''
+    获取通过请求获取当地天气时需携带的apiId与apiKey
+    '''
+    with open('/root/get_weather_id.txt', 'r') as f:
+        apiId = f.readline().apiId[0: -1]
+    with open('/root/get_weather_key.txt', 'r') as f:
+        apiKey = f.readline().apiKey[0: -1]
+
+    return apiId, apiKey
+
+def _get_weather(apiId:str, apiKey:str, province:str, city:str)->dict:
+    '''
+    根据参数发起请求以获取天气信息
+    '''
+    url = f'https://cn.apihz.cn/api/tianqi/tqyb.php?id={apiId}&key={apiKey}&sheng={province}&place={city}'
+    response = requests.get(url)
+    weather_info = response.json()
+
+    return weather_info
+
+
+
 def save_weather(province, city, adcode):
     '''
     暂存一段时间某地某时刻的天气，有效时间为高德天气api最近一次更新时间开始15分钟
     '''
-    # apiKey = '7be7dff3729983328f5bbc4815cd5022'
-    with open('/root/get_weather_key.txt', 'r') as f:
-        apiKey = f.readline()
-        apiKey = apiKey[0: -1]
-    with open('/root/get_weather_id.txt', 'r') as f:
-        apiId = f.readline()
-        apiId = apiId[0: -1]
-    url = f'https://cn.apihz.cn/api/tianqi/tqyb.php?id={apiId}&key={apiKey}&sheng={province}&place={city}'
-
-    response = requests.get(url)
-    weather_info = response.json()
-
+    apiId, apiKey = _get_weather_api_id_and_key()
     utc_now = timezone.now()
     now = timezone.localtime(utc_now).strftime('%Y-%m-%d %H:%M:%S')
 
+    weather_info = _get_weather(
+        apiId=apiId,
+        apiKey=apiKey,
+        province=province,
+        city=city
+    )
     # 储存数据
     cache.set(
         f'{adcode}_weather',
