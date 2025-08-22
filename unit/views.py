@@ -1,18 +1,17 @@
-if __name__ != '__main__':
-    from django.shortcuts import render
-    from django.contrib.sessions.models import Session
-    from django.http import JsonResponse, HttpResponse
-    from django.utils import timezone
-    from django.utils.timezone import now
-    from django.core.cache import cache
-    from django.contrib.auth.models import User
-    from loguru import logger
-    import requests
-    import hashlib
-    import json
-    import os
-    import base64
-    import uuid
+from django.shortcuts import render
+from django.contrib.sessions.models import Session
+from django.http import JsonResponse, HttpResponse
+from django.utils import timezone
+from django.utils.timezone import now
+from django.core.cache import cache
+from django.contrib.auth.models import User
+from loguru import logger
+import requests
+import hashlib
+import json
+import os
+import base64
+import uuid
 
 def session_check(func):
     def wrapper(request, *args, **kwargs):
