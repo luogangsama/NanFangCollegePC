@@ -52,7 +52,7 @@ def user_get_city_and_weather(request):
     while IP is None:
         logger.success(f'缓存中未存储{user.username}的位置信息，开始尝试通过解析IP地址获取')
         # save_ip(user.username, json.loads(request.body)['ip'])
-        save_ip(user.username, __get_client_ip(request))
+        save_ip(user.username, _get_client_ip(request))
         IP = cache.get(f'{user.username}_ip')
 
     # 部分使用流量的用户获取的地址和adcode是空列表
@@ -62,7 +62,7 @@ def user_get_city_and_weather(request):
     if len(IP['adcode']) == 0 or len(IP['city']) == 0:
         logger.warning(f'用户{user.username}的位置信息为空，再次尝试解析IP并存储位置信息')
         # save_ip(user.username, json.loads(request.body)['ip'])
-        save_ip(user.username, __get_client_ip(request))
+        save_ip(user.username, _get_client_ip(request))
     if len(IP['adcode']) == 0 or len(IP['city']) == 0:
         logger.error(f'依然无法获取{user.username}的位置信息，强制返回，位置信息于缓存中将储存为空')
         return JsonResponse({'message': 'Unable obtain location info'}, status=500)
@@ -79,14 +79,20 @@ def user_get_city_and_weather(request):
         },
         'weather': weather
     }, status=200)
+
+def _get_user_ip_info_api_key()->str:
+    '''
+    返回通过ip查询adcode所需要携带的apiKey
+    '''
+    with open('/root/get_user_ip_info_api_key.txt', 'r') as f:
+        apiKey = f.readline()[0: -1]
+        return apiKey
     
 def save_ip(username, ip):
     '''
     存储用户的IP，有效时间30分钟
     '''
-    with open('/root/get_user_ip_info_api_key.txt', 'r') as f:
-        apiKey = f.readline()
-        apiKey = apiKey[0: -1]
+    apiKey = _get_user_ip_info_api_key()
     get_adcode_from_ip_url = f'https://restapi.amap.com/v3/ip?ip={ip}&key={apiKey}'
     response = requests.get(get_adcode_from_ip_url)
     city = response.json()['city']
@@ -156,7 +162,7 @@ def get_weather(province, city, adcode):
     # }
     return {'weather': weather}
 
-def __get_client_ip(request):
+def _get_client_ip(request):
     """
     获取客户端的真实IP地址
     """
