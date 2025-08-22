@@ -91,7 +91,7 @@ ASGI_APPLICATION = 'NanFangCollegePC.asgi.application'
 CHANNEL_LAYERS = {
     "default": {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'COFIG': {
+        'CONFIG': {
             'hosts': [('127.0.0.1', 6379)],
         }
     }

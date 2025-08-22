@@ -1,14 +1,18 @@
-from django.shortcuts import render
-from django.contrib.sessions.models import Session
-from django.http import JsonResponse, HttpResponse
-from django.utils import timezone
-from django.utils.timezone import now
-from django.core.cache import cache
-from django.contrib.auth.models import User
-from loguru import logger
-import requests
-import hashlib
-import json
+if __name__ != '__main__':
+    from django.shortcuts import render
+    from django.contrib.sessions.models import Session
+    from django.http import JsonResponse, HttpResponse
+    from django.utils import timezone
+    from django.utils.timezone import now
+    from django.core.cache import cache
+    from django.contrib.auth.models import User
+    from loguru import logger
+    import requests
+    import hashlib
+    import json
+    import os
+    import base64
+    import uuid
 
 def session_check(func):
     def wrapper(request, *args, **kwargs):
@@ -120,12 +124,12 @@ def save_weather(province, city, adcode):
     cache.set(
         f'{adcode}_weather',
         {
-            'temperature': weather_info['temperature'], # 温度
+            'temperature': weather_info['nowinfo']['temperature'], # 温度
             'weather': weather_info['weather1'], # 天气
-            'humidity': weather_info['humidity'], # 湿度
-            'winddirection': weather_info['windDirection'], # 风向
-            'windpower': weather_info['windSpeed'], # 风力
-            'updateTime': now
+            'humidity': weather_info['nowinfo']['humidity'], # 湿度
+            'winddirection': weather_info['nowinfo']['windDirection'], # 风向
+            'windpower': weather_info['nowinfo']['windSpeed'], # 风力
+            'updateTime': time_now
         },
         900
         )
@@ -212,7 +216,7 @@ def validMessageFromWeiXin(func):
 
 def getAccessToken(AppID:str, AppSecret:str):
     '''
-    获取accessToken
+    获取微信公众号accessToken
     GET https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET 
     '''
     url = f'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={AppID}&secret={AppSecret}'
@@ -220,3 +224,83 @@ def getAccessToken(AppID:str, AppSecret:str):
     print(response.text)
     accessToken = json.loads(response.text)['access_token']
     return accessToken
+
+class ImageConverter:
+    '''
+    Base64图片转换工具
+    '''
+    @staticmethod
+    def imageToBase64(path):
+        '''
+        图片转Base64字符串
+        '''
+        try:
+            with open(path, 'rb') as f:
+                base64Data = base64.b64encode(f.read()).decode("utf-8")
+                return base64Data
+        except Exception as e:
+            raise Exception(f'图片转Base64失败: {str(e)}')
+        
+    @staticmethod
+    def base64ToImage(base64Str, outputPath=None, fileName=None):
+        try:
+            if ',' in base64Str:
+                base64Str = base64Str.split(',')[1]
+
+            # 解码Base64为图片
+            image = base64.b64decode(base64Str)
+            outputPath = outputPath or os.path.join(os.path, 'message_board/images')
+            os.makedirs(outputPath, exist_ok=True)
+
+            if not fileName:
+                fileName = f'{uuid.uuid4().hex}.jpg'
+            
+            outputPath = os.path.join(outputPath, fileName)
+
+            with open(outputPath, 'wb') as f:
+                f.write(image)
+            
+            return outputPath
+        
+        except Exception as e:
+            raise Exception(f'Base64转图片失败: {str(e)}')
+
+if __name__ == '__main__':
+    import requests
+    ip = ''
+    with open('/home/luoenhao/Documents/get_user_ip_info_api_key.txt', 'r') as f:
+        apiKey = f.readline()
+        apiKey = apiKey[0: -1]
+    get_adcode_from_ip_url = f'https://restapi.amap.com/v3/ip?ip={ip}&key={apiKey}'
+    response = requests.get(get_adcode_from_ip_url)
+    city = response.json()['city']
+    province = response.json()['province']
+    adcode = response.json()['adcode']
+    print(city, ', ', province, ', ', adcode)
+    with open('/home/luoenhao/Documents/get_weather_key.txt', 'r') as f:
+        apiKey = f.readline()
+        apiKey = apiKey[0: -1]
+    with open('/home/luoenhao/Documents/get_weather_id.txt', 'r') as f:
+        apiId = f.readline()
+        apiId = apiId[0: -1]
+    url = f'https://cn.apihz.cn/api/tianqi/tqyb.php?id={apiId}&key={apiKey}&sheng={province}&place={city}'
+
+    response = requests.get(url)
+    weather_info = response.json()
+    print(weather_info)
+
+    time_now = ''
+
+    # 储存数据
+    data = (
+        f'{adcode}_weather',
+        {
+            'temperature': weather_info['nowinfo']['temperature'], # 温度
+            'weather': weather_info['weather1'], # 天气
+            'humidity': weather_info['nowinfo']['humidity'], # 湿度
+            'winddirection': weather_info['nowinfo']['windDirection'], # 风向
+            'windpower': weather_info['nowinfo']['windSpeed'], # 风力
+            'updateTime': time_now
+        },
+        900
+        )
