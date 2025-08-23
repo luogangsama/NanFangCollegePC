@@ -176,36 +176,59 @@ def save_user_info(request):
     现已改为使用get方法这种更安全的方式获取数据，以及使用if的语法糖压缩代码量，整体逻辑不变
     '''
     new_name = data.get('newName')
-    new_name = new_name if new_name != None else get_user_from_sessionid(sessionid=sessionid).username
+    new_name = new_name if new_name else get_user_from_sessionid(sessionid=sessionid).username
 
     new_phone_number = data.get('phoneNumber')
-    new_phone_number = new_phone_number if new_phone_number != None else UserProfile.objects.get(
+    new_phone_number = new_phone_number if new_phone_number else UserProfile.objects.get(
         user=get_user_from_sessionid(sessionid=sessionid)
     ).phoneNumber
     
 # ===============================================================================
-    # 判断可能出现的新旧名相同的情况
-    if new_name == get_user_from_sessionid(sessionid=sessionid).username:
-        # 首先更改auth_user表中的username
-        user = User.objects.get(username=get_user_from_sessionid(sessionid=sessionid).username)
-        user.username = new_name
-        user.save()
+    # # 判断可能出现的新旧名相同的情况
+    # if new_name == get_user_from_sessionid(sessionid=sessionid).username:
+    #     # 首先更改auth_user表中的username
+    #     user = User.objects.get(username=get_user_from_sessionid(sessionid=sessionid).username)
+    #     user.username = new_name
+    #     user.save()
 
-        # 然后根据新user去更改phone number
-        userProfile = UserProfile.objects.get(user=user)
-        userProfile.phoneNumber = new_phone_number
-        userProfile.save()
-    else:
-        if len(User.objects.filter(username=new_name)) > 0:
-            return JsonResponse({'message': 'This user is existed'})
-        user = User.objects.get(username=get_user_from_sessionid(sessionid=sessionid).username)
-        user.username = new_name
-        user.save()
+    #     # 然后根据新user去更改phone number
+    #     userProfile = UserProfile.objects.get(user=user)
+    #     userProfile.phoneNumber = new_phone_number
+    #     userProfile.save()
+    # else:
+    #     if len(User.objects.filter(username=new_name)) > 0:
+    #         return JsonResponse({'message': 'This user is existed'})
+    #     user = User.objects.get(username=get_user_from_sessionid(sessionid=sessionid).username)
+    #     user.username = new_name
+    #     user.save()
 
-        # 然后根据新user去更改phone number
-        userProfile = UserProfile.objects.get(user=user)
-        userProfile.phoneNumber = new_phone_number
-        userProfile.save()
+    #     # 然后根据新user去更改phone number
+    #     userProfile = UserProfile.objects.get(user=user)
+    #     userProfile.phoneNumber = new_phone_number
+    #     userProfile.save()
+    
+    # 根据发起请求的用户的session获取其id
+    user = get_user_from_sessionid(sessionid=sessionid)
+    user_id_with_session_id = user.pk
+
+    # 根据新名称查找用户id,若查到则返回其id，否则设为为发起请求的用户的id
+    user_id_with_new_name = User.objects.filter(username=new_name).first().pk \
+        if User.objects.filter(username=new_name).first().pk \
+        else user_id_with_session_id
+
+    if user_id_with_new_name != user_id_with_session_id:
+        # 判断这两个id是否相等，就可以判断新名称是否指向另一个用户
+        # 是的话就返回用户名称已被占用的响应
+        return JsonResponse({'message': 'This user is existed'})
+    
+    # 更新表中的用户数据
+    user.username = new_name
+    user.save()
+    userProfile = UserProfile.objects.get(user=user)
+    userProfile.phoneNumber = new_phone_number
+    userProfile.save()
+
+
         
     # 登出再登入（刷新sessionid）
     logout(request=request)
