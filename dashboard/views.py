@@ -213,7 +213,7 @@ def save_user_info(request):
 
     # 根据新名称查找用户id,若查到则返回其id，否则设为为发起请求的用户的id
     user_id_with_new_name = User.objects.filter(username=new_name).first().pk \
-        if User.objects.filter(username=new_name).first().pk \
+        if User.objects.filter(username=new_name).first() \
         else user_id_with_session_id
 
     if user_id_with_new_name != user_id_with_session_id:
