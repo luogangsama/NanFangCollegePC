@@ -154,22 +154,35 @@ def save_user_info(request):
     # 解析请求消息体
     data = json.loads(request.body)
 # ===============================================================================
-    try:
-        new_name = data['newName']
-    except:
-        new_name = get_user_from_sessionid(sessionid=sessionid).username
-    try:
-        new_phone_number = data['phoneNumber']
-    except:
-        try:
-            new_phone_number = UserProfile.objects.get(
-                user=get_user_from_sessionid(sessionid=sessionid)
-            ).phoneNumber
-        except:
-            new_phone_number = None
-    #以上一块代码的目的是为了判断用户是只想改任意一项还是两项都要改。
-    #电话号码的部分的基本逻辑：若消息体中没有phoneNumber则先查找一下UserProfile表中是否有这个用户对应的号码，
-    #若是有则直接拿出来赋值给new_phone_number，这样更新后号码不变，若是查找不到，就预设一个None
+    # try:
+    #     new_name = data['newName']
+    # except:
+    #     new_name = get_user_from_sessionid(sessionid=sessionid).username
+    # try:
+    #     new_phone_number = data['phoneNumber']
+    # except:
+    #     try:
+    #         new_phone_number = UserProfile.objects.get(
+    #             user=get_user_from_sessionid(sessionid=sessionid)
+    #         ).phoneNumber
+    #     except:
+    #         new_phone_number = None
+    # #以上一块代码的目的是为了判断用户是只想改任意一项还是两项都要改。
+    # #电话号码的部分的基本逻辑：若消息体中没有phoneNumber则先查找一下UserProfile表中是否有这个用户对应的号码，
+    # #若是有则直接拿出来赋值给new_phone_number，这样更新后号码不变，若是查找不到，就预设一个None
+
+    '''
+    以上为旧版本逻辑，在字典中直接使用索引是不安全的写法，所以使用了大量的的错误处理来满足逻辑，
+    现已改为使用get方法这种更安全的方式获取数据，以及使用if的语法糖压缩代码量，整体逻辑不变
+    '''
+    new_name = data.get('newName')
+    new_name = new_name if new_name != None else get_user_from_sessionid(sessionid=sessionid).username
+
+    new_phone_number = data.get('phoneNumber')
+    new_phone_number = new_phone_number if new_phone_number != None else UserProfile.objects.get(
+        user=get_user_from_sessionid(sessionid=sessionid)
+    ).phoneNumber
+    
 # ===============================================================================
     # 判断可能出现的新旧名相同的情况
     if new_name == get_user_from_sessionid(sessionid=sessionid).username:
