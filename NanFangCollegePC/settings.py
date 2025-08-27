@@ -81,8 +81,18 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    },
+    'NanFangCollegePC':{
+        'ENGINE': 'mysql.connector.django',
     }
 }
+import xml.etree.ElementTree as ET
+dbSettingsTree = ET.parse('mysql-setting.xml')
+dbSettingsRoot = dbSettingsTree.getroot()
+for child in dbSettingsRoot:
+    DATABASES['NanFangCollegePC'][child.tag] = child.text
+
+print(DATABASES)
 
 
 ASGI_APPLICATION = 'NanFangCollegePC.asgi.application'
