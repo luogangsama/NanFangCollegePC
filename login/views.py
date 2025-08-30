@@ -85,6 +85,6 @@ def forget_password(request):
             return JsonResponse({'message': '密码修改成功'})
 
         except User.DoesNotExist:
-            return JsonResponse({'message': '该账号未注册'}, status=200)
+            return JsonResponse({'message': '该账号未注册'}, status=400)
     else:
-        return status
+        return JsonResponse({'message': '验证码失效'}, status=400)

@@ -1,4 +1,5 @@
 /venv/
+参考文档.md
 start.sh
 mysql-setting.xml
 db.sqlite3
