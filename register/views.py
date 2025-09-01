@@ -59,7 +59,6 @@ def register(request):
             else:
                 record = User.objects.create(
                     username=username,
-                    last_name='customer',
                     email=email
                 )
                 UserProfile.objects.create(
@@ -106,12 +105,12 @@ def worker_register(request):
             except:
                 record = User.objects.create(
                     username=username,
-                    last_name='worker',
                     email=email
                 )
                 UserProfile.objects.create(
                     user=record, # 在用户信息表中初始化一行
-                    phoneNumber='None'
+                    phoneNumber='None',
+                    identity='worker'
                 )
                 record.set_password(password)
                 record.save()
