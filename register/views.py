@@ -51,11 +51,12 @@ def register(request):
                 return status
 
 
-            try:
-                user = User.objects.get(username=username)
+
+            user = User.objects.filter(username=username)
+            if len(user) > 0:
                 response = Response(message='Existed', method='POST')
                 return response
-            except:
+            else:
                 record = User.objects.create(
                     username=username,
                     last_name='customer',
