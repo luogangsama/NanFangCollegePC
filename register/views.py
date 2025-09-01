@@ -36,11 +36,14 @@ def register(request):
             code = data['code']
 
             # 确保一个邮箱一个账号
-            try:
-                user = User.objects.get(email=email)
+            # try:
+            #     user = User.objects.get(email=email)
+            #     return JsonResponse({'message': '邮箱已被注册'}, status=200)
+            # except:
+            #     pass
+            user = User.objects.filter(email=email)
+            if len(user) > 0:
                 return JsonResponse({'message': '邮箱已被注册'}, status=200)
-            except:
-                pass
             
             # 判断验证码是否有效
             status = verify_code(email, code)
