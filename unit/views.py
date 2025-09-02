@@ -55,7 +55,7 @@ def user_get_city_and_weather(request):
     while IP is None:
         logger.success(f'缓存中未存储{user.username}的位置信息，开始尝试通过解析IP地址获取')
         # save_ip(user.username, json.loads(request.body)['ip'])
-        save_ip(user.username, _get_client_ip(request))
+        save_ip(user.username, _get_client_ip(request=request))
         IP = cache.get(f'{user.username}_ip')
 
     # 部分使用流量的用户获取的地址和adcode是空列表
@@ -65,9 +65,10 @@ def user_get_city_and_weather(request):
     if len(IP['adcode']) == 0 or len(IP['city']) == 0:
         logger.warning(f'用户{user.username}的位置信息为空，再次尝试解析IP并存储位置信息')
         # save_ip(user.username, json.loads(request.body)['ip'])
-        save_ip(user.username, _get_client_ip(request))
+        ip = _get_client_ip(request)
+        save_ip(user.username, ip)
     if len(IP['adcode']) == 0 or len(IP['city']) == 0:
-        logger.error(f'依然无法获取{user.username}的位置信息，强制返回，位置信息于缓存中将储存为空')
+        logger.error(f'依然无法获取{user.username}的位置信息，强制返回，位置信息于缓存中将储存为空；错误IP：[ {ip} ]')
         return JsonResponse({'message': 'Unable obtain location info'}, status=500)
 
     logger.success(f'缓存中成功获取{user.username}的位置信息: {IP}')
