@@ -35,7 +35,7 @@ def get_user_info(request):
     return JsonResponse({
         'message': 'Success',
         'username': user.username,
-        'label': user.last_name
+        'label': user.profile.identity
     })
 
 
@@ -276,7 +276,7 @@ def assign_order(request):
     '''
     sessionid = request.COOKIES.get('sessionid')
     user = get_user_from_sessionid(sessionid=sessionid)
-    if user.last_name != 'admin':
+    if user.profile.identity != 'admin':
         # 权限不符合
         return JsonResponse({'message': 'Permission error'}, status=200)
     data = json.loads(request.body)
@@ -284,7 +284,7 @@ def assign_order(request):
     try:
         worker_name = data['workerName']
         worker = User.objects.get(username=worker_name)
-        if worker.last_name not in ['worker', 'admin']:
+        if worker.profile.identity not in ['worker', 'admin']:
             # 权限不符合
             return JsonResponse({'message': 'Permission error'}, status=403)
     except User.DoesNotExist:
@@ -403,7 +403,7 @@ def get_report_of_same_day(request):
     '''
     sessionid = request.COOKIES.get('sessionid')
     user = get_user_from_sessionid(sessionid=sessionid)
-    if user.last_name != 'admin':
+    if user.profile.identity != 'admin':
         return JsonResponse({'message': 'Permission error'})
     reports = call_report_table.objects.all().order_by('-pk').filter(
         weekday=UserProfile.objects.get(user=user).dutyTime

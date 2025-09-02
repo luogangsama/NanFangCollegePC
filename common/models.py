@@ -13,6 +13,7 @@ from django.contrib.auth.models import AbstractUser, User
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     phoneNumber = models.CharField(max_length=11)
+    identity = models.CharField(max_length=8, default='customer')
     dutyTime = models.CharField(max_length=1, default='0')
 
     def __str__(self):
