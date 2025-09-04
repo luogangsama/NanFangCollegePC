@@ -193,7 +193,7 @@ def get_weather(province, city):
         weather = cache.get(f'{province}_{city}_weather')
         logger.info(weather)
         retry -= 1
-    if retry == 0:
+    if retry == 0 and weather == None:
         return {'weather': []}
     logger.success(f'缓存中成功获取{province}_{city}的天气信息:\n{weather}')
     # 结构如下
