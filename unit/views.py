@@ -1,18 +1,17 @@
 if __name__ != '__main__':
-    from django.shortcuts import render
     from django.contrib.sessions.models import Session
     from django.http import JsonResponse, HttpResponse
     from django.utils import timezone
-    from django.utils.timezone import now
     from django.core.cache import cache
     from django.contrib.auth.models import User
-    from loguru import logger
-    import requests
-    import hashlib
-    import json
-    import os
-    import base64
-    import uuid
+
+from loguru import logger
+import requests
+import hashlib
+import json
+import os
+import base64
+import uuid
 
 def session_check(func):
     '''
@@ -92,27 +91,43 @@ def _get_user_ip_info_api_key(dir: str='/root')->str:
         apiKey = f.readline()[0: -1]
         return apiKey
 
-def _get_adcode_by_ip(ip: str, apiKey: str)->tuple[str, str, str]:
-    get_adcode_from_ip_url = f'https://restapi.amap.com/v3/ip?ip={ip}&key={apiKey}'
-    response = requests.get(get_adcode_from_ip_url)
-    city = response.json()['city']
-    province = response.json()['province']
-    adcode = response.json()['adcode']
+def _get_ip_location(ip: str)->tuple[str, str]:
+    get_ip_location_url = f'https://api.vore.top/api/IPv4?v4={ip}'
+    response = requests.get(get_ip_location_url).json()
+    try:
+        if response['msg'] != 'SUCCESS':
+            raise KeyError("查询IP属地接口响应异常，请检查接口状态")
+        elif response['ipdata']['info1'] == '保留IP':
+            raise KeyError('')
 
-    return adcode, province, city
+        # 根据观察，当info3为空串时获取的是国内属地信息，info1/info2分别对应省/市
+        # 否则获取的是国外属地信息，info1/info2/info3分别对应国/省/市
+        if response['ipdata']['info3'] == '':
+            province = response['ipdata']['info1']
+            city = response['ipdata']['info2']
+        else:
+            province = response['ipdata']['info2']
+            city = response['ipdata']['info3']
+        return province, city
+    except KeyError as e:
+        # 接口异常是打印日志且将返回值均设置为空串
+        logger.error(f'{e}')
+        return '', ''
+    except Exception as e:
+        logger.error(f'{e}')
+        return '', ''
+
     
 def save_ip(username, ip):
     '''
     存储用户的IP，有效时间30分钟
     '''
-    apiKey = _get_user_ip_info_api_key(dir='/root')
-    adcode, province, city = _get_adcode_by_ip(ip=ip, apiKey=apiKey)
+    province, city = _get_ip_location(ip=ip)
     cache.set(
         f'{username}_ip',
         {
             'province': province,
             'city': city,
-            'adcode': adcode
         },
         1800)
 
@@ -132,14 +147,14 @@ def _get_weather(apiId:str, apiKey:str, province:str, city:str)->dict:
     根据参数发起请求以获取天气信息
     '''
     url = f'https://cn.apihz.cn/api/tianqi/tqyb.php?id={apiId}&key={apiKey}&sheng={province}&place={city}'
-    response = requests.get(url)
-    weather_info = response.json()
+    response = requests.get(url).json()
+    weather_info = response
 
     return weather_info
 
 
 
-def save_weather(province, city, adcode):
+def save_weather(province, city):
     '''
     暂存一段时间某地某时刻的天气，有效时间为高德天气api最近一次更新时间开始15分钟
     '''
@@ -156,7 +171,7 @@ def save_weather(province, city, adcode):
     # 储存数据
     try:
         cache.set(
-            f'{adcode}_weather',
+            f'{province}_{city}_weather',
             {
                 'temperature': weather_info['nowinfo']['temperature'], # 温度
                 'weather': weather_info['weather1'], # 天气
@@ -168,19 +183,19 @@ def save_weather(province, city, adcode):
             900
             )
     except KeyError:
-        raise("第三方天气接口返回的天气信息结构发生变化，请及时修复")
+        raise("第三方天气接口返回的天气信息结构发生变化，请检查接口状态")
 
-def get_weather(province, city, adcode):
+def get_weather(province, city):
     '''
     根据adcode读取先前储存在缓存中的天气信息
     '''
-    weather = cache.get(f'{adcode}_weather')
+    weather = cache.get(f'{province}_{city}_weather')
     while weather is None:
         logger.success(f'缓存中未储存{city}的天气信息，开始尝试通过province,city获取天气')
-        save_weather(province, city, adcode)
+        save_weather(province, city)
         logger.success(f'成功获取{city}的天气信息，存入缓存')
-        weather = cache.get(f'{adcode}_weather')
-    logger.success(f'缓存中成功获取{city}的天气信息:\n{weather}')
+        weather = cache.get(f'{province}_{city}_weather')
+    logger.success(f'缓存中成功获取{province}_{city}的天气信息:\n{weather}')
     # 结构如下
     # weather = {
     #     'temperature': temperature,
@@ -196,13 +211,16 @@ def _get_client_ip(request):
     """
     获取客户端的真实IP地址
     """
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('HTTP_X_REAL_IP', request.META.get('REMOTE_ADDR'))
-    if ip == 'localhost' or ip == '127.0.0.1':
-        raise("获取到用户ip为本机回环地址，请留意nginx等反向代理的配置")
+    try:
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('HTTP_X_REAL_IP', request.META.get('REMOTE_ADDR'))
+        if ip == 'localhost' or ip == '127.0.0.1':
+            raise KeyError("获取到用户ip为本机回环地址，请留意nginx等反向代理的配置")
+    except KeyError as e:
+        logger.error(f'{e}')
     return ip
 
 def validMessageFromWeiXin(func):
@@ -305,8 +323,7 @@ class ImageConverter:
 if __name__ == '__main__':
     import requests
 
-    apiKey = _get_user_ip_info_api_key('/home/luoenhao/Documents')
     ip = '120.197.18.205'
-    adcode, province, city = _get_adcode_by_ip(ip=ip, apiKey=apiKey)
+    province, city = _get_ip_location(ip=ip)
     apiId, getWeatherKey = _get_weather_api_id_and_key('/home/luoenhao/Documents')
     print(_get_weather(apiId=apiId, apiKey=getWeatherKey, province=province, city=city))
