@@ -84,7 +84,7 @@ def user_get_city_and_weather(request):
         }, status=200)
 
     except Exception as e:
-        logger.error(f'e')
+        logger.error(f'{e}')
 
 
 def _get_ip_location(ip: str)->tuple[str, str]:
