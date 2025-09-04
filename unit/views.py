@@ -186,7 +186,7 @@ def get_weather(province, city):
     '''
     weather = cache.get(f'{province}_{city}_weather')
     retry = 3
-    while retry > 0:
+    while retry > 0 and weather == None:
         logger.success(f'缓存中未储存{city}的天气信息，开始尝试通过province,city获取天气')
         save_weather(province, city)
         logger.success(f'成功获取{city}的天气信息，存入缓存')
