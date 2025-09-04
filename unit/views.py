@@ -93,8 +93,6 @@ def _get_ip_location(ip: str)->tuple[str, str]:
     try:
         if response['msg'] != 'SUCCESS':
             raise KeyError("查询IP属地接口响应异常，请检查接口状态")
-        elif response['ipdata']['info1'] == '保留IP':
-            raise KeyError('')
 
         # 根据观察，当info3为空串时获取的是国内属地信息，info1/info2分别对应省/市
         # 否则获取的是国外属地信息，info1/info2/info3分别对应国/省/市
@@ -179,7 +177,7 @@ def save_weather(province, city):
             900
             )
     except KeyError:
-        raise("第三方天气接口返回的天气信息结构发生变化，请检查接口状态")
+        logger.error("第三方天气接口返回的天气信息结构发生变化，请检查接口状态")
 
 def get_weather(province, city):
     '''
