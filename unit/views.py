@@ -191,6 +191,7 @@ def get_weather(province, city):
         save_weather(province, city)
         logger.success(f'成功获取{city}的天气信息，存入缓存')
         weather = cache.get(f'{province}_{city}_weather')
+        logger.info(weather)
         retry -= 1
     if retry == 0:
         return {'weather': []}
@@ -325,4 +326,12 @@ if __name__ == '__main__':
     ip = '120.197.18.205'
     province, city = _get_ip_location(ip=ip)
     apiId, getWeatherKey = _get_weather_api_id_and_key('/home/luoenhao/Documents')
-    print(_get_weather(apiId=apiId, apiKey=getWeatherKey, province=province, city=city))
+    weather_info = _get_weather(apiId=apiId, apiKey=getWeatherKey, province=province, city=city)
+    test = {
+                'temperature': weather_info['nowinfo']['temperature'], # 温度
+                'weather': weather_info['weather1'], # 天气
+                'humidity': weather_info['nowinfo']['humidity'], # 湿度
+                'winddirection': weather_info['nowinfo']['windDirection'], # 风向
+                'windpower': weather_info['nowinfo']['windSpeed'], # 风力
+            }
+    print(test)
