@@ -45,51 +45,47 @@ def get_user_from_sessionid(sessionid):
 
 @session_check
 def user_get_city_and_weather(request):
-    '''
-    获取用户存储的IP
-    '''
-    sessionid = request.COOKIES.get('sessionid')
-    user = get_user_from_sessionid(sessionid=sessionid)
-    IP = cache.get(f'{user.username}_ip')
-    while IP is None:
-        logger.success(f'缓存中未存储{user.username}的位置信息，开始尝试通过解析IP地址获取')
-        # save_ip(user.username, json.loads(request.body)['ip'])
-        save_ip(user.username, _get_client_ip(request=request))
+    try:
+        '''
+        获取用户存储的IP
+        '''
+        sessionid = request.COOKIES.get('sessionid')
+        user = get_user_from_sessionid(sessionid=sessionid)
         IP = cache.get(f'{user.username}_ip')
+        while IP is None:
+            logger.success(f'缓存中未存储{user.username}的位置信息，开始尝试通过解析IP地址获取')
+            # save_ip(user.username, json.loads(request.body)['ip'])
+            save_ip(user.username, _get_client_ip(request=request))
+            IP = cache.get(f'{user.username}_ip')
 
-    # 部分使用流量的用户获取的地址和adcode是空列表
-    # 因为缓存机制会导致空列表也储存一段时间，下次连
-    # 接wifi后访问此网页也会直接返回空列表。为避免这
-    # 种情况，额外给此用户一次获取地址的机会
-    if len(IP['adcode']) == 0 or len(IP['city']) == 0:
-        logger.warning(f'用户{user.username}的位置信息为空，再次尝试解析IP并存储位置信息')
-        # save_ip(user.username, json.loads(request.body)['ip'])
-        ip = _get_client_ip(request)
-        save_ip(user.username, ip)
-    if len(IP['adcode']) == 0 or len(IP['city']) == 0:
-        logger.error(f'依然无法获取{user.username}的位置信息，强制返回，位置信息于缓存中将储存为空；错误IP：[ {ip} ]')
-        return JsonResponse({'message': 'Unable obtain location info'}, status=500)
+        # 部分使用流量的用户获取的地址是空列表
+        # 因为缓存机制会导致空列表也储存一段时间，下次连
+        # 接wifi后访问此网页也会直接返回空列表。为避免这
+        # 种情况，额外给此用户一次获取地址的机会
+        if len(IP['province']) == 0 or len(IP['city']) == 0:
+            logger.warning(f'用户{user.username}的位置信息为空，再次尝试解析IP并存储位置信息')
+            # save_ip(user.username, json.loads(request.body)['ip'])
+            ip = _get_client_ip(request)
+            save_ip(user.username, ip)
+        if len(IP['province']) == 0 or len(IP['city']) == 0:
+            logger.error(f'依然无法获取{user.username}的位置信息，强制返回，位置信息于缓存中将储存为空；错误IP：[ {ip} ]')
+            return JsonResponse({'message': 'Unable obtain location info'}, status=500)
 
-    logger.success(f'缓存中成功获取{user.username}的位置信息: {IP}')
-    province = IP['province']
-    city = IP['city']
-    adcode = IP['adcode']
-    weather = get_weather(province, city, adcode)
-    return JsonResponse({
-        'message': 'Success',
-        'IP': {
-            'city': city,
-        },
-        'weather': weather
-    }, status=200)
+        logger.success(f'缓存中成功获取{user.username}的位置信息: {IP}')
+        province = IP['province']
+        city = IP['city']
+        weather = get_weather(province, city)
+        return JsonResponse({
+            'message': 'Success',
+            'IP': {
+                'city': city,
+            },
+            'weather': weather
+        }, status=200)
 
-def _get_user_ip_info_api_key(dir: str='/root')->str:
-    '''
-    返回通过ip查询adcode所需要携带的apiKey
-    '''
-    with open(f'{dir}/get_user_ip_info_api_key.txt', 'r') as f:
-        apiKey = f.readline()[0: -1]
-        return apiKey
+    except Exception as e:
+        logger.error(f'e')
+
 
 def _get_ip_location(ip: str)->tuple[str, str]:
     get_ip_location_url = f'https://api.vore.top/api/IPv4?v4={ip}'
@@ -187,7 +183,7 @@ def save_weather(province, city):
 
 def get_weather(province, city):
     '''
-    根据adcode读取先前储存在缓存中的天气信息
+    根据省份与城市读取先前储存在缓存中的天气信息
     '''
     weather = cache.get(f'{province}_{city}_weather')
     while weather is None:
