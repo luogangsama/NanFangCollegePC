@@ -176,19 +176,24 @@ def save_weather(province, city):
             },
             900
             )
-    except KeyError:
+    except KeyError as e:
         logger.error("第三方天气接口返回的天气信息结构发生变化，请检查接口状态")
+        logger.error(e)
 
 def get_weather(province, city):
     '''
     根据省份与城市读取先前储存在缓存中的天气信息
     '''
     weather = cache.get(f'{province}_{city}_weather')
-    while weather is None:
+    retry = 3
+    while retry > 0:
         logger.success(f'缓存中未储存{city}的天气信息，开始尝试通过province,city获取天气')
         save_weather(province, city)
         logger.success(f'成功获取{city}的天气信息，存入缓存')
         weather = cache.get(f'{province}_{city}_weather')
+        retry -= 1
+    if retry == 0:
+        return {'weather': []}
     logger.success(f'缓存中成功获取{province}_{city}的天气信息:\n{weather}')
     # 结构如下
     # weather = {
