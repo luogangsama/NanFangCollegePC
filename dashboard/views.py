@@ -68,7 +68,7 @@ def call_report(request):
         )
         return JsonResponse({'message': 'Success', 'orderDetails': '订单提交成功'}, status=200)
     except Exception as e:
-        logger.error(e, exc_info=True)
+        logger.error(json.loads(request.body), exc_info=True)
 
 @session_check
 def user_get_history_report(request):
