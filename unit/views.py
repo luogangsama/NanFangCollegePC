@@ -395,7 +395,9 @@ def userWeather(request):
             'IP': {
                 'city': userLocation['city']
             },
-            'weather': weatherInfo
+            'weather': {
+                'weather': weatherInfo
+                }
             },
             status=200)
 
