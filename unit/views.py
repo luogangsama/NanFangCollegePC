@@ -229,6 +229,7 @@ def userWeather(request):
             if userLocation == None:
                 logger.warning(f'无法获取用户位置信息，异常IP: [ {userIP} ]')
                 return JsonResponse({'message': '无法获取用户位置信息，请检查网络连接'}, status=403)
+            logger.info(f'{user.username}的属地: {userLocation['province']}-{userLocation["city"]}')
             user.profile.location = userLocation
             user.profile.locationExpiresAt = timezone.now() + timedelta(minutes=EXPIRES_TIME)
             user.profile.save()
