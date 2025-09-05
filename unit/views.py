@@ -90,9 +90,9 @@ def _get_ip_location(ip: str)->tuple[str, str]:
         if response['msg'] != 'SUCCESS':
             raise KeyError("查询IP属地接口响应异常，请检查接口状态")
 
-        # 根据观察，当info3为空串时获取的是国内属地信息，info1/info2分别对应省/市
+        # 根据观察，当info3为空串或为'基站'时获取的是国内属地信息，info1/info2分别对应省/市
         # 否则获取的是国外属地信息，info1/info2/info3分别对应国/省/市
-        if response['ipdata']['info3'] == '' or response['ipdata']['info3'] != '基站':
+        if response['ipdata']['info3'] == '' or response['ipdata']['info3'] == '基站':
             province = response['ipdata']['info1']
             city = response['ipdata']['info2']
         else:
