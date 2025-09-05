@@ -25,6 +25,7 @@ from unit.views import session_check, get_user_from_sessionid, validMessageFromW
 
 # Create your views here.
 
+@logger.catch
 @session_check
 def get_user_info(request):
     '''
@@ -39,37 +40,36 @@ def get_user_info(request):
     })
 
 
+@logger.catch
 @session_check
 def call_report(request):
     '''
     接受前端发送的报单请求，并验证cookies后将订单存入数据库
     '''
-    try:
-        sessionid = request.COOKIES.get('sessionid')
-        # session验证通过后，获取请求消息体中的内容
-        user = get_user_from_sessionid(sessionid=sessionid)
+    sessionid = request.COOKIES.get('sessionid')
+    # session验证通过后，获取请求消息体中的内容
+    user = get_user_from_sessionid(sessionid=sessionid)
 
-        data = json.loads(request.body)
-        userPhoneNumber = data['userPhoneNumber']
-        address = data['address']
-        issue = data['issue']
-        date = data['date'] # 时间格式%Y-%m-%d %H:%M
-        weekday = str(datetime.datetime.strptime(date, '%Y-%m-%d %H:%M').weekday() + 1)
-        call_date = data['call_date'] # 订单提交的时间
+    data = json.loads(request.body)
+    userPhoneNumber = data['userPhoneNumber']
+    address = data['address']
+    issue = data['issue']
+    date = data['date'] # 时间格式%Y-%m-%d %H:%M
+    weekday = str(datetime.datetime.strptime(date, '%Y-%m-%d %H:%M').weekday() + 1)
+    call_date = data['call_date'] # 订单提交的时间
 
-        call_report_table.objects.create(
-            user=user,
-            userPhoneNumber=userPhoneNumber,
-            address=address,
-            issue=issue,
-            date=date,
-            call_date=call_date,
-            weekday=weekday,
-        )
-        return JsonResponse({'message': 'Success', 'orderDetails': '订单提交成功'}, status=200)
-    except Exception as e:
-        logger.error(json.loads(request.body), exc_info=True)
+    call_report_table.objects.create(
+        user=user,
+        userPhoneNumber=userPhoneNumber,
+        address=address,
+        issue=issue,
+        date=date,
+        call_date=call_date,
+        weekday=weekday,
+    )
+    return JsonResponse({'message': 'Success', 'orderDetails': '订单提交成功'}, status=200)
 
+@logger.catch
 @session_check
 def user_get_history_report(request):
     '''
@@ -114,6 +114,7 @@ def user_get_history_report(request):
 
     return JsonResponse(return_report_info, status=200)
 
+@logger.catch
 @session_check
 def worker_get_report_list(request):
     '''
@@ -139,6 +140,7 @@ def worker_get_report_list(request):
         'report_info': reports
     }, status=200)
 
+@logger.catch
 @session_check
 def log_out(request):
     '''
@@ -148,6 +150,7 @@ def log_out(request):
     logout(request)
     return JsonResponse({'message': 'Success'}, status=200)
 
+@logger.catch
 @session_check
 def save_user_info(request):
     '''
@@ -239,6 +242,7 @@ def save_user_info(request):
     
     return JsonResponse({'message': 'Success'}, status=200)
     
+@logger.catch
 @session_check
 def get_phone_number(request):
     sessionid = request.COOKIES.get('sessionid')
@@ -251,6 +255,7 @@ def get_phone_number(request):
     except User.DoesNotExist:
         return JsonResponse({'message': 'No phone number'}, status=200)
 
+@logger.catch
 @session_check
 def renew_password(request):
     '''
@@ -272,6 +277,7 @@ def renew_password(request):
     else:
         return JsonResponse({'message': 'Password error'}, status=200)
 
+@logger.catch
 @session_check
 def assign_order(request):
     '''
@@ -309,6 +315,7 @@ def assign_order(request):
     except call_report_table.DoesNotExist:
         return JsonResponse({'message': 'This report is no exist'}, status=200)
 
+@logger.catch
 @session_check
 def complete_report(request):
     '''
@@ -330,6 +337,7 @@ def complete_report(request):
     report.save()
     return JsonResponse({'message': 'Success'}, status=200)
 
+@logger.catch
 @session_check
 def cancel_report(request):
     '''
@@ -349,6 +357,7 @@ def cancel_report(request):
     except:
         return JsonResponse({'message': 'This report is no exist'}, status=200)
 
+@logger.catch
 @session_check
 def reset_email_send_code(request):
     '''
@@ -360,6 +369,7 @@ def reset_email_send_code(request):
     # 向用户注册账户时绑定的邮箱发送验证码
     return send_verification_email(old_email)
 
+@logger.catch
 @session_check
 def reset_email(request):
     '''
@@ -379,6 +389,7 @@ def reset_email(request):
     else:
         return status
 
+@logger.catch
 @session_check
 def get_staff_of_same_day(request):
     '''
@@ -399,6 +410,7 @@ def get_staff_of_same_day(request):
     # logger.success(f'与{user.username}同一天工作的人员名单:\n{return_data["workers"]}')
     return JsonResponse(return_data, status=200)
    
+@logger.catch
 @session_check
 def get_report_of_same_day(request):
     '''
@@ -433,6 +445,7 @@ def get_report_of_same_day(request):
     # logger.success(f'{user.username}管理的订单:\n{return_data["reports"]}')
     return JsonResponse(return_data, status=200)
 
+@logger.catch
 @session_check
 def submit_rating(request):
     data = json.loads(request.body)
@@ -456,6 +469,7 @@ def submit_rating(request):
         return JsonResponse({'message': 'Report not found'}, status=400)
 
 
+@logger.catch
 def parse_wechat_message(request):
     """解析微信XML消息"""
     xml_data = request.body
@@ -468,6 +482,7 @@ def parse_wechat_message(request):
         "msg_id": xml_tree.find("MsgId").text
     }
 
+@logger.catch
 def build_text_response(to_user, from_user, content):
     """构造文本响应XML"""
     return f"""
@@ -480,6 +495,7 @@ def build_text_response(to_user, from_user, content):
     </xml>
     """
 
+@logger.catch
 @validMessageFromWeiXin
 def weixinTest(request):
     if request.method == "POST":

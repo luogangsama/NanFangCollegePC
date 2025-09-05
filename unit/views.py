@@ -35,6 +35,7 @@ def session_check(func):
 
 
 # Create your views here.
+@logger.catch
 def get_user_from_sessionid(sessionid):
     # 获取会话对象
     session = Session.objects.get(session_key=sessionid)
@@ -211,6 +212,7 @@ class ImageConverter:
         except Exception as e:
             raise Exception(f'Base64转图片失败: {str(e)}')
 
+@logger.catch
 @session_check
 def userWeather(request):
     try:
