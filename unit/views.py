@@ -333,18 +333,18 @@ def userWeather(request):
 
         '''获取用户属地'''
         user = get_user_from_sessionid(request.COOKIES.get('sessionid'))
-        userLocation = user.location
+        userLocation = user.profile.location
 
-        if not userLocation or timezone.now() > user.locationExpiresAt + timedelta(minutes=EXPIRES_TIME):
+        if not userLocation or timezone.now() > user.profile.locationExpiresAt + timedelta(minutes=EXPIRES_TIME):
             # 用户属地过期或者为空就调用第三方接口进行定位
             userIP = _get_client_ip(request)
             userLocation = _get_ip_location(ip=userIP)
             if userLocation == None:
                 logger.warning(f'无法获取用户位置信息，异常IP: [ {userIP} ]')
                 return JsonResponse({'message': '无法获取用户位置信息，请检查网络连接'}, status=403)
-            user.location = userLocation
-            user.locationExpires = timezone.now() + timedelta(minutes=EXPIRES_TIME)
-            user.save()
+            user.profile.location = userLocation
+            user.profile.locationExpiresAt = timezone.now() + timedelta(minutes=EXPIRES_TIME)
+            user.profile.save()
         
         '''获取属地的天气信息'''
         weather = locationWeather.objects.filter(location=userLocation)
