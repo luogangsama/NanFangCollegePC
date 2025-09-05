@@ -222,6 +222,7 @@ def userWeather(request):
         if not userLocation or timezone.now() > user.profile.locationExpiresAt + timedelta(minutes=EXPIRES_TIME):
             # 用户属地过期或者为空就调用第三方接口进行定位
             userIP = _get_client_ip(request)
+            logger.info(f'{user.username}的IP: [ {userIP} ]')
             userLocation = _get_ip_location(ip=userIP)
             if userLocation == None:
                 logger.warning(f'无法获取用户位置信息，异常IP: [ {userIP} ]')
