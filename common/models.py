@@ -12,8 +12,8 @@ from django.contrib.auth.models import AbstractUser, User
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    location = models.TextField()
-    locationExpiresAt = models.DateTimeField()
+    location = models.JSONField(default=dict, blank=True)
+    locationExpiresAt = models.DateTimeField(blank=True)
     phoneNumber = models.CharField(max_length=11)
     identity = models.CharField(max_length=8, default='customer')
     dutyTime = models.CharField(max_length=1, default='0')
@@ -22,7 +22,7 @@ class UserProfile(models.Model):
         return f"{self.user.username}'s Profile"
 
 class locationWeather(models.Model):
-    location = models.TextField()
+    location = models.JSONField(default=dict)
     weather = models.JSONField(help_text='')
     expiresAt = models.DateTimeField()
 

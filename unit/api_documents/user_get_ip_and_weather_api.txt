@@ -3,13 +3,7 @@
 请求url：
     https://localhost/api/unit/user_get_city_and_weather/
 请求方式：
-    POST
-参数：
-    ip
-请求示例:
-    {
-        'ip': '11.4.5.14'
-    }
+    GET
 响应示例：
     sessionid成功验证：
     缓存中有IP信息：

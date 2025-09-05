@@ -4,8 +4,10 @@ if __name__ != '__main__':
     from django.utils import timezone
     from django.core.cache import cache
     from django.contrib.auth.models import User
+    from common.models import locationWeather
 
 from loguru import logger
+from datetime import timedelta
 import requests
 import hashlib
 import json
@@ -96,14 +98,17 @@ def _get_ip_location(ip: str)->tuple[str, str]:
         else:
             province = response['ipdata']['info2']
             city = response['ipdata']['info3']
-        return province, city
+        return {
+            'province': province,
+            'city': city
+        }
     except KeyError as e:
         # 接口异常是打印日志且将返回值均设置为空串
         logger.error(f'{e}', exc_info=True)
-        return '', ''
+        return None
     except Exception as e:
         logger.error(f'{e}', exc_info=True)
-        return '', ''
+        return None
 
     
 def save_ip(username, ip):
@@ -320,6 +325,83 @@ class ImageConverter:
         
         except Exception as e:
             raise Exception(f'Base64转图片失败: {str(e)}')
+
+@session_check
+def userWeather(request):
+    try:
+        EXPIRES_TIME = 15 #分钟
+
+        '''获取用户属地'''
+        user = get_user_from_sessionid(request.COOKIES.get('sessionid'))
+        userLocation = user.location
+
+        if not userLocation or timezone.now() > user.locationExpiresAt + timedelta(minutes=EXPIRES_TIME):
+            # 用户属地过期或者为空就调用第三方接口进行定位
+            userIP = _get_client_ip(request)
+            userLocation = _get_ip_location(ip=userIP)
+            if userLocation == None:
+                logger.warning(f'无法获取用户位置信息，异常IP: [ {userIP} ]')
+                return JsonResponse({'message': '无法获取用户位置信息，请检查网络连接'}, status=403)
+            user.location = userLocation
+            user.locationExpires = timezone.now() + timedelta(minutes=EXPIRES_TIME)
+            user.save()
+        
+        '''获取属地的天气信息'''
+        weather = locationWeather.objects.filter(location=userLocation)
+        weatherInfo = None
+        if not weather or timezone.now() > weather[0].expiresAt + timedelta(minutes=EXPIRES_TIME):
+            # 如果数据库中没有该用户的天气信息或已过期，则从第三方API获取并更新数据库
+            province, city = userLocation['province'], userLocation['city']
+            apiId, apiKey = _get_weather_api_id_and_key()
+            utc_now = timezone.now()
+            now = timezone.localtime(utc_now).strftime('%Y-%m-%d %H:%M:%S')
+
+            weatherInfo = _get_weather(
+                apiId=apiId,
+                apiKey=apiKey,
+                province=province,
+                city=city
+            )
+            if weatherInfo['code'] != 200:
+                logger.error(f'获取天气失败，属地{province}-{city}')
+                return JsonResponse({'message': '无法获取天气信息，请检查网络连接'}, status=403)
+            
+            weatherInfo = {
+                'temperature': weatherInfo['nowinfo']['temperature'], # 温度
+                'weather': weatherInfo['weather1'], # 天气
+                'humidity': weatherInfo['nowinfo']['humidity'], # 湿度
+                'winddirection': weatherInfo['nowinfo']['windDirection'], # 风向
+                'windpower': weatherInfo['nowinfo']['windSpeed'], # 风力
+                'updateTime': now
+            }
+            if weather:
+                '''不为空时更新'''
+                weather[0].weather = weatherInfo
+                weather[0].expiresAt = timezone.now() + timedelta(minutes=EXPIRES_TIME)
+                weather[0].save()
+            else:
+                '''为空时创建'''
+                locationWeather.objects.create(
+                    location=userLocation,
+                    weather=weatherInfo,
+                    expiresAt=timezone.now() + timedelta(minutes=EXPIRES_TIME)
+                )
+        else:
+            weatherInfo = weather[0].weather
+        
+        return JsonResponse({
+            'message': 'Success',
+            'IP': {
+                'city': userLocation['city']
+            },
+            'weather': weatherInfo
+            },
+            status=200)
+
+    except Exception as e:
+        logger.error(e, exc_info=True)
+        return JsonResponse({'message': '天气业务异常'}, status=500)
+
 
 if __name__ == '__main__':
     import requests
