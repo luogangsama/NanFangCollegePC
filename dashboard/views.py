@@ -107,7 +107,7 @@ def user_get_history_report(request):
             'call_date': call_date,
             'weekday': weekday
         })
-        logger.success(f'{user.username}的历史订单: {return_report_info["report_info"]}')
+        # logger.success(f'{user.username}的历史订单: {return_report_info["report_info"]}')
 
     return JsonResponse(return_report_info, status=200)
 
@@ -393,7 +393,7 @@ def get_staff_of_same_day(request):
 
     for staff in staffs:
         return_data['workers'].append({'username': staff.user.username})
-    logger.success(f'与{user.username}同一天工作的人员名单:\n{return_data["workers"]}')
+    # logger.success(f'与{user.username}同一天工作的人员名单:\n{return_data["workers"]}')
     return JsonResponse(return_data, status=200)
    
 @session_check
@@ -427,7 +427,7 @@ def get_report_of_same_day(request):
             'call_date': report.call_date,
             'workerName': workerName,
         })
-    logger.success(f'{user.username}管理的订单:\n{return_data["reports"]}')
+    # logger.success(f'{user.username}管理的订单:\n{return_data["reports"]}')
     return JsonResponse(return_data, status=200)
 
 @session_check
