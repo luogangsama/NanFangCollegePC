@@ -45,43 +45,6 @@ def get_user_from_sessionid(sessionid):
     # 返回用户对象
     return User.objects.get(pk=user_id) if user_id else None
 
-@session_check
-def user_get_city_and_weather(request):
-    try:
-        '''
-        获取用户存储的IP
-        '''
-        sessionid = request.COOKIES.get('sessionid')
-        user = get_user_from_sessionid(sessionid=sessionid)
-        IP = cache.get(f'{user.username}_ip')
-        if IP == None:
-            logger.info(f'缓存中未存储{user.username}的位置信息，开始尝试通过解析IP地址获取')
-            save_ip(user.username, _get_client_ip(request=request))
-            IP = cache.get(f'{user.username}_ip')
-
-        # 上次解析属地失败会将属地信息设置为空串
-        if IP['province'] == '' or IP['city'] == '':
-            logger.warning(f'用户{user.username}的位置信息为空，再次尝试解析IP并存储位置信息')
-            # save_ip(user.username, json.loads(request.body)['ip'])
-            ip = _get_client_ip(request)
-            save_ip(user.username, ip)
-
-        logger.success(f'缓存中成功获取{user.username}的位置信息: {IP}')
-        province = IP['province']
-        city = IP['city']
-        weather = get_weather(province, city)
-        return JsonResponse({
-            'message': 'Success',
-            'IP': {
-                'city': city,
-            },
-            'weather': weather
-        }, status=200)
-
-    except Exception as e:
-        logger.error(f'{e}', exc_info=True)
-        return JsonResponse({'message': '天气服务出现异常，请联系开发者'}, status=500)
-
 
 def _get_ip_location(ip: str)->tuple[str, str]:
     get_ip_location_url = f'https://api.vore.top/api/IPv4?v4={ip}'
@@ -111,22 +74,6 @@ def _get_ip_location(ip: str)->tuple[str, str]:
         logger.error(f'{e}', exc_info=True)
         return None
 
-    
-def save_ip(username, ip):
-    '''
-    存储用户的IP，有效时间30分钟
-    '''
-    province, city = _get_ip_location(ip=ip)
-    if province == '' and city == '':
-        logger.error('解析ip属地失败，已将{username}的ip属地设为空串，异常IP: {ip}')
-
-    cache.set(
-        f'{username}_ip',
-        {
-            'province': province,
-            'city': city,
-        },
-        1800)
 
 def _get_weather_api_id_and_key(dir: str='/root')->tuple[str, str]:
     '''
@@ -148,71 +95,6 @@ def _get_weather(apiId:str, apiKey:str, province:str, city:str)->dict:
     weather_info = response
 
     return weather_info
-
-
-
-def save_weather(province, city):
-    '''
-    暂存一段时间某地某时刻的天气，有效时间为高德天气api最近一次更新时间开始15分钟
-    '''
-    apiId, apiKey = _get_weather_api_id_and_key()
-    utc_now = timezone.now()
-    now = timezone.localtime(utc_now).strftime('%Y-%m-%d %H:%M:%S')
-
-    weather_info = _get_weather(
-        apiId=apiId,
-        apiKey=apiKey,
-        province=province,
-        city=city
-    )
-    if weather_info['code'] != 200:
-        logger.error(f'获取天气失败，属地{province}-{city}')
-        return
-    # 储存数据
-    try:
-        cache.set(
-            f'{province}_{city}_weather',
-            {
-                'temperature': weather_info['nowinfo']['temperature'], # 温度
-                'weather': weather_info['weather1'], # 天气
-                'humidity': weather_info['nowinfo']['humidity'], # 湿度
-                'winddirection': weather_info['nowinfo']['windDirection'], # 风向
-                'windpower': weather_info['nowinfo']['windSpeed'], # 风力
-                'updateTime': now
-            },
-            900
-            )
-    except KeyError as e:
-        logger.error("第三方天气接口返回的天气信息结构发生变化，请检查接口状态")
-        logger.error(e)
-
-def get_weather(province, city):
-    '''
-    根据省份与城市读取先前储存在缓存中的天气信息
-    '''
-    weather = cache.get(f'{province}_{city}_weather')
-    if weather == None:
-        logger.success(f'缓存中未储存{city}的天气信息，开始尝试通过province,city获取天气')
-        save_weather(province, city)
-        logger.success(f'成功获取{city}的天气信息，存入缓存')
-        weather = cache.get(f'{province}_{city}_weather')
-        logger.info(weather)
-    
-    # 依旧获取天气失败
-    if weather == None:
-        return {'weather': []}
-
-    logger.success(f'缓存中成功获取{province}_{city}的天气信息:\n{weather}')
-    # 结构如下
-    # weather = {
-    #     'temperature': temperature,
-    #     'weather': weather,
-    #     'humidity': humidity,
-    #     'winddirection': winddirection,
-    #     'windpower': windpower,
-    #     'updateTime': now
-    # }
-    return {'weather': weather}
 
 def _get_client_ip(request):
     """
@@ -335,6 +217,7 @@ def userWeather(request):
         '''获取用户属地'''
         user = get_user_from_sessionid(request.COOKIES.get('sessionid'))
         userLocation = user.profile.location
+        logger.info(f'从数据库中获取到{user.username}的属地: {userLocation}')
 
         if not userLocation or timezone.now() > user.profile.locationExpiresAt + timedelta(minutes=EXPIRES_TIME):
             # 用户属地过期或者为空就调用第三方接口进行定位
