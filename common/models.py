@@ -12,12 +12,19 @@ from django.contrib.auth.models import AbstractUser, User
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    location = models.TextField()
+    locationExpiresAt = models.DateTimeField()
     phoneNumber = models.CharField(max_length=11)
     identity = models.CharField(max_length=8, default='customer')
     dutyTime = models.CharField(max_length=1, default='0')
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
+
+class locationWeather(models.Model):
+    location = models.TextField()
+    weather = models.JSONField(help_text='')
+    expiresAt = models.DateTimeField()
 
 class call_report_table(models.Model):
     # 用户名称
