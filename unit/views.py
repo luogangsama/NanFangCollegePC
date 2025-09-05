@@ -225,19 +225,22 @@ def userWeather(request):
             # 用户属地过期或者为空就调用第三方接口进行定位
             userIP = _get_client_ip(request)
             logger.info(f'{user.username}的IP: [ {userIP} ]')
+            logger.info(f'开始尝试获取{user.username}的属地信息')
             userLocation = _get_ip_location(ip=userIP)
             if userLocation == None:
                 logger.warning(f'无法获取用户位置信息，异常IP: [ {userIP} ]')
                 return JsonResponse({'message': '无法获取用户位置信息，请检查网络连接'}, status=403)
-            logger.info(f'{user.username}的属地: {userLocation['province']}-{userLocation["city"]}')
             user.profile.location = userLocation
             user.profile.locationExpiresAt = timezone.now() + timedelta(minutes=EXPIRES_TIME)
             user.profile.save()
+            logger.success(f'{user.username}的属地: {userLocation['province']}-{userLocation["city"]}，入库成功')
         
         '''获取属地的天气信息'''
+        logger.info(f'开始尝试从数据库中获取{userLocation}的天气')
         weather = locationWeather.objects.filter(location=userLocation)
         weatherInfo = None
         if not weather or timezone.now() > weather[0].expiresAt + timedelta(minutes=EXPIRES_TIME):
+            logger.info(f'数据库中无{userLocation}天气信息或已过期，开始尝试重新获取')
             # 如果数据库中没有该用户的天气信息或已过期，则从第三方API获取并更新数据库
             province, city = userLocation['province'], userLocation['city']
             apiId, apiKey = _get_weather_api_id_and_key()
@@ -274,6 +277,7 @@ def userWeather(request):
                     weather=weatherInfo,
                     expiresAt=timezone.now() + timedelta(minutes=EXPIRES_TIME)
                 )
+            logger.success(f'{userLocation}天气:{weatherInfo}，入库成功')
         else:
             weatherInfo = weather[0].weather
         
