@@ -205,3 +205,9 @@ LOGGING = {
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# 
+# try:
+    # a = {}
+    # a['b']
+# except Exception as e:
+    # logger.opt(exception=True).error(f"错误信息: {e}")

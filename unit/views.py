@@ -73,7 +73,7 @@ def _get_ip_location(ip: str)->tuple[str, str]:
         logger.error(f'{e}', exc_info=True)
         return None
     except Exception as e:
-        logger.error(f'{e}', exc_info=True)
+        logger.opt(exception=True).error(f'{e}')
         return None
 
 
@@ -132,7 +132,7 @@ def validMessageFromWeiXin(func):
                 token = f.readline()
                 token = token[0:-1]
         except Exception as e:
-            logger.error(e)
+            logger.opt(exception=True).error(f'{e}')
             token = ''
         # 获取请求参数
         timestamp = request.GET.get('timestamp', '')
@@ -294,7 +294,7 @@ def userWeather(request):
             status=200)
 
     except Exception as e:
-        logger.error(e, exc_info=True)
+        logger.opt(exception=True).error(f'{e}')
         return JsonResponse({'message': '天气业务异常'}, status=500)
 
 
