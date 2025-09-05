@@ -52,24 +52,17 @@ def user_get_city_and_weather(request):
         sessionid = request.COOKIES.get('sessionid')
         user = get_user_from_sessionid(sessionid=sessionid)
         IP = cache.get(f'{user.username}_ip')
-        while IP is None:
-            logger.success(f'缓存中未存储{user.username}的位置信息，开始尝试通过解析IP地址获取')
-            # save_ip(user.username, json.loads(request.body)['ip'])
+        if IP == None:
+            logger.info(f'缓存中未存储{user.username}的位置信息，开始尝试通过解析IP地址获取')
             save_ip(user.username, _get_client_ip(request=request))
             IP = cache.get(f'{user.username}_ip')
 
-        # 部分使用流量的用户获取的地址是空列表
-        # 因为缓存机制会导致空列表也储存一段时间，下次连
-        # 接wifi后访问此网页也会直接返回空列表。为避免这
-        # 种情况，额外给此用户一次获取地址的机会
-        if len(IP['province']) == 0 or len(IP['city']) == 0:
+        # 上次解析属地失败会将属地信息设置为空串
+        if IP['province'] == '' or IP['city'] == '':
             logger.warning(f'用户{user.username}的位置信息为空，再次尝试解析IP并存储位置信息')
             # save_ip(user.username, json.loads(request.body)['ip'])
             ip = _get_client_ip(request)
             save_ip(user.username, ip)
-        if len(IP['province']) == 0 or len(IP['city']) == 0:
-            logger.error(f'依然无法获取{user.username}的位置信息，强制返回，位置信息于缓存中将储存为空；错误IP：[ {ip} ]')
-            return JsonResponse({'message': 'Unable obtain location info'}, status=500)
 
         logger.success(f'缓存中成功获取{user.username}的位置信息: {IP}')
         province = IP['province']
@@ -84,7 +77,8 @@ def user_get_city_and_weather(request):
         }, status=200)
 
     except Exception as e:
-        logger.error(f'{e}')
+        logger.error(f'{e}', exc_info=True)
+        return JsonResponse({'message': '天气服务出现异常，请联系开发者'}, status=500)
 
 
 def _get_ip_location(ip: str)->tuple[str, str]:
@@ -105,10 +99,10 @@ def _get_ip_location(ip: str)->tuple[str, str]:
         return province, city
     except KeyError as e:
         # 接口异常是打印日志且将返回值均设置为空串
-        logger.error(f'{e}')
+        logger.error(f'{e}', exc_info=True)
         return '', ''
     except Exception as e:
-        logger.error(f'{e}')
+        logger.error(f'{e}', exc_info=True)
         return '', ''
 
     
@@ -117,6 +111,9 @@ def save_ip(username, ip):
     存储用户的IP，有效时间30分钟
     '''
     province, city = _get_ip_location(ip=ip)
+    if province == '' and city == '':
+        logger.error('解析ip属地失败，已将{username}的ip属地设为空串，异常IP: {ip}')
+
     cache.set(
         f'{username}_ip',
         {
@@ -162,6 +159,9 @@ def save_weather(province, city):
         province=province,
         city=city
     )
+    if weather_info['code'] != 200:
+        logger.error(f'获取天气失败，属地{province}-{city}')
+        return
     # 储存数据
     try:
         cache.set(
@@ -185,16 +185,17 @@ def get_weather(province, city):
     根据省份与城市读取先前储存在缓存中的天气信息
     '''
     weather = cache.get(f'{province}_{city}_weather')
-    retry = 3
-    while retry > 0 and weather == None:
+    if weather == None:
         logger.success(f'缓存中未储存{city}的天气信息，开始尝试通过province,city获取天气')
         save_weather(province, city)
         logger.success(f'成功获取{city}的天气信息，存入缓存')
         weather = cache.get(f'{province}_{city}_weather')
         logger.info(weather)
-        retry -= 1
-    if retry == 0 and weather == None:
+    
+    # 依旧获取天气失败
+    if weather == None:
         return {'weather': []}
+
     logger.success(f'缓存中成功获取{province}_{city}的天气信息:\n{weather}')
     # 结构如下
     # weather = {
@@ -334,4 +335,5 @@ if __name__ == '__main__':
                 'winddirection': weather_info['nowinfo']['windDirection'], # 风向
                 'windpower': weather_info['nowinfo']['windSpeed'], # 风力
             }
+    print(weather_info)
     print(test)
