@@ -92,6 +92,7 @@ def _get_ip_location(ip: str)->tuple[str, str]:
 
         # 根据观察，当info3为空串或为'基站'时获取的是国内属地信息，info1/info2分别对应省/市
         # 否则获取的是国外属地信息，info1/info2/info3分别对应国/省/市
+        logger.info(response)
         if response['ipdata']['info3'] == '' or response['ipdata']['info3'] == '基站':
             province = response['ipdata']['info1']
             city = response['ipdata']['info2']
@@ -103,7 +104,7 @@ def _get_ip_location(ip: str)->tuple[str, str]:
             'city': city
         }
     except KeyError as e:
-        # 接口异常是打印日志且将返回值均设置为空串
+        # 接口异常是打印日志且将返回值均设置为空
         logger.error(f'{e}', exc_info=True)
         return None
     except Exception as e:
