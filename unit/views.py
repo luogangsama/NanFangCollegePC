@@ -92,7 +92,7 @@ def _get_ip_location(ip: str)->tuple[str, str]:
 
         # 根据观察，当info3为空串时获取的是国内属地信息，info1/info2分别对应省/市
         # 否则获取的是国外属地信息，info1/info2/info3分别对应国/省/市
-        if response['ipdata']['info3'] == '':
+        if response['ipdata']['info3'] == '' and response['ipdata']['info3'] != '基站':
             province = response['ipdata']['info1']
             city = response['ipdata']['info2']
         else:
