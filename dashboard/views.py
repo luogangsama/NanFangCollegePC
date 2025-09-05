@@ -44,28 +44,31 @@ def call_report(request):
     '''
     接受前端发送的报单请求，并验证cookies后将订单存入数据库
     '''
-    sessionid = request.COOKIES.get('sessionid')
-    # session验证通过后，获取请求消息体中的内容
-    user = get_user_from_sessionid(sessionid=sessionid)
+    try:
+        sessionid = request.COOKIES.get('sessionid')
+        # session验证通过后，获取请求消息体中的内容
+        user = get_user_from_sessionid(sessionid=sessionid)
 
-    data = json.loads(request.body)
-    userPhoneNumber = data['userPhoneNumber']
-    address = data['address']
-    issue = data['issue']
-    date = data['date'] # 时间格式%Y-%m-%d %H:%M
-    weekday = str(datetime.datetime.strptime(date, '%Y-%m-%d %H:%M').weekday() + 1)
-    call_date = data['call_date'] # 订单提交的时间
+        data = json.loads(request.body)
+        userPhoneNumber = data['userPhoneNumber']
+        address = data['address']
+        issue = data['issue']
+        date = data['date'] # 时间格式%Y-%m-%d %H:%M
+        weekday = str(datetime.datetime.strptime(date, '%Y-%m-%d %H:%M').weekday() + 1)
+        call_date = data['call_date'] # 订单提交的时间
 
-    call_report_table.objects.create(
-        user=user,
-        userPhoneNumber=userPhoneNumber,
-        address=address,
-        issue=issue,
-        date=date,
-        call_date=call_date,
-        weekday=weekday,
-    )
-    return JsonResponse({'message': 'Success', 'orderDetails': '订单提交成功'}, status=200)
+        call_report_table.objects.create(
+            user=user,
+            userPhoneNumber=userPhoneNumber,
+            address=address,
+            issue=issue,
+            date=date,
+            call_date=call_date,
+            weekday=weekday,
+        )
+        return JsonResponse({'message': 'Success', 'orderDetails': '订单提交成功'}, status=200)
+    except Exception as e:
+        logger.error(e, exc_info=True)
 
 @session_check
 def user_get_history_report(request):
