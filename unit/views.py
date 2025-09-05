@@ -276,6 +276,7 @@ def userWeather(request):
                 )
         else:
             weatherInfo = weather[0].weather
+            logger.success(f'数据库中成功获取{userLocation}的天气: {weatherInfo}')
         
         return JsonResponse({
             'message': 'Success',
