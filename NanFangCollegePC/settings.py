@@ -174,34 +174,49 @@ except :
 
 from NanFangCollegePC.loguru_config import logger  # 引入 loguru 的配置文件
 
-# 配置 Django 的日志系统，转发到 loguru
 LOGGING = {
     "version": 1,
-    "disable_existing_loggers": False,  # 不禁用其他日志
+    "disable_existing_loggers": False,  # 保持为 False，避免禁用项目中其他已有的日志记录器:cite[2]:cite[10]
+    "formatters": { # 建议添加 formatters 来定义日志格式
+        "verbose": { # 一种详细的格式
+            "format": "[%(asctime)s] [%(levelname)s] [%(name)s:%(lineno)d] %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+        "simple": { # 一种简单的格式
+            "format": "[%(levelname)s] %(message)s"
+        },
+    },
     "handlers": {
         "loguru": {
-            "level": "INFO",
+            "level": "DEBUG",  # 在 handler 级别设置 DEBUG，可以捕获更详细的日志，然后在 logger 级别过滤
             "class": "NanFangCollegePC.loguru_config.InterceptHandler",  # 使用 loguru 的处理器
+            # 如果你在 InterceptHandler 中支持 formatter，可以在这里指定
+            # "formatter": "verbose", 
         },
     },
     "root": {
         "handlers": ["loguru"],
-        "level": "INFO",
+        "level": "INFO", # Root logger 的级别
     },
     "loggers": {
-        "django": {
+        "django": { # 处理 Django 框架本身的日志
             "handlers": ["loguru"],
-            "level": "INFO",
-            "propagate": False,
+            "level": "INFO", # 设置为 INFO 级别，可以记录 Django 的一般信息
+            "propagate": False, # 不向更高级别的 logger（如 root）传播，避免重复记录
         },
-        "django.request": {
+        "django.request": { # 专门处理 Django 请求相关的错误
             "handlers": ["loguru"],
-            "level": "ERROR",
-            "propagate": False,
+            "level": "ERROR", # 只记录 ERROR 及以上级别的请求错误
+            "propagate": False, 
         },
+        # 你可以考虑添加更多特定的 logger
+        # 'django.db.backends': { # 数据库查询日志
+        #     'handlers': ['loguru'],
+        #     'level': 'DEBUG', # DEBUG 级别会记录所有数据库查询，生产环境通常设为 INFO 或更高
+        #     'propagate': False,
+        # },
     },
 }
-
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
