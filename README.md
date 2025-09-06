@@ -22,10 +22,10 @@
 | 组件 | 技术选择 |
 |------|----------|
 | 后端框架 | Django 5.1 |
-| 数据库 | SQLite (开发) |
+| 数据库 | MySQL |
 | 日志系统 | Loguru |
 | API文档 | 模块内嵌Markdown文档 |
-| 认证方式 | JWT + Session混合认证 |
+| 认证方式 | Session认证 |
 
 ### 项目结构
 ```
@@ -54,37 +54,14 @@ NanFangCollegePC/
    - 处理进度跟踪
    - 历史记录查询
 
-3. **实时聊天室**
-   - 像微信QQ一样聊天
-   - 根据订单划分不同的聊天室
+3. **实时留言板**
+   - 根据订单划分不同的留言板
    - 现已支持发送图片
 
 4. **辅助服务**
    - 电子邮箱验证码服务
    - 天气信息查询
    - 用户IP记录
-
-## API设计
-
-### 响应格式
-```json
-{
-    "code": 200,
-    "message": "操作成功",
-    "data": {
-        // 业务数据
-    }
-}
-```
-
-### 状态码规范
-| 状态码 | 含义 |
-|--------|------|
-| 200 | 请求成功 |
-| 400 | 参数错误 |
-| 401 | 未授权 |
-| 403 | 禁止访问 |
-| 500 | 服务器错误 |
 
 ## 开发指南
 
@@ -107,8 +84,9 @@ venv\Scripts\activate    # Windows
 pip install -r requirements.txt
 ```
 
-4. 数据库迁移
+4. 数据库初始化
 ```bash
+python manage.py makemigrations
 python manage.py migrate
 ```
 
@@ -122,7 +100,6 @@ python manage.py runserver 0.0.0.0:8000
 ## 生产环境部署
 
 ### 生产环境要求
-- Linux服务器
 - Python 3.10+
 - MySQL
 - Nginx
@@ -141,8 +118,18 @@ server {
 }
 ```
 
+2. 项目根目录创建mysql-setting.xml
+ ```xml
+<connection>
+    <HOST>your mysql host</HOST>
+    <PORT>your mysql port</PORT>
+    <USER>your mysql username</USER>
+    <PASSWORD>your mysql password</PASSWORD>
+</connection>
+ ```
+
 ```
-2. 生产环境启动
+3. 生产环境启动
 ```python
 daphne NanFangCollegePC.asgi:application --bind 127.0.0.1 --port 8000
 ```
