@@ -117,43 +117,34 @@ python manage.py migrate
 python manage.py runserver 0.0.0.0:8000
 ```
 
-## 部署指南
+
+
+## 生产环境部署
 
 ### 生产环境要求
 - Linux服务器
 - Python 3.10+
-- SQLite
+- MySQL
 - Nginx
 
 ### 部署步骤
-1. 配置Nginx
+1. 配置Nginx反向代理
 ```nginx
 server {
-        server_name localhost;
+         ...
+        server_name gznfpc.cn;
         listen 443 ssl;
-        ssl_certificate /etc/nginx/sslkey/ssl.crt;
-        ssl_certificate_key /etc/nginx/sslkey/ssl.key;
-        ssl_session_timeout 5m;
-        ssl_protocols TLSv1.2;
-        ssl_ciphers EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!KRB5:!aECDH:!EDH+3DES;
-        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";
         location /api/{
                 proxy_pass http://localhost:8000/api/;
         }
-        location ~*\.html$ {
-                root /root/WebFont/pc-declaration-system;
-        }
-        location ~*\.js$ {
-                root /root/WebFont/pc-declaration-system/js;
-        }
+         ...
 }
-}
-
 ```
 
-2. 启动服务
-```bash
-python manage.py runserver 0.0.0.0:8000
+```
+2. 生产环境启动
+```python
+daphne NanFangCollegePC.asgi:application --bind 127.0.0.1 --port 8000
 ```
 
 ## 测试方案
