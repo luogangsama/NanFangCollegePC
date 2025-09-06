@@ -123,6 +123,7 @@ server {
 <connection>
     <HOST>your mysql host</HOST>
     <PORT>your mysql port</PORT>
+    <NAME>your database name</NAME>
     <USER>your mysql username</USER>
     <PASSWORD>your mysql password</PASSWORD>
 </connection>
