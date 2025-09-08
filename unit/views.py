@@ -235,7 +235,7 @@ def userWeather(request):
             user.profile.location = userLocation
             user.profile.locationExpiresAt = timezone.now() + timedelta(minutes=EXPIRES_TIME)
             user.profile.save()
-            logger.success(f'{user.username}的属地: {userLocation['province']}-{userLocation["city"]}，入库成功')
+            logger.success(f"{user.username}的属地: {userLocation['province']}-{userLocation["city"]}，入库成功")
         
         '''获取属地的天气信息'''
         logger.info(f'开始尝试从数据库中获取{userLocation}的天气')
