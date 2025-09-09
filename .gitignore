@@ -10,3 +10,4 @@ websocketNote.md
 **/*.py[cod]
 **/*$py.class
 **/migrations/*
+staticfiles/*
