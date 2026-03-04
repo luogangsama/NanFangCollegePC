@@ -48,34 +48,39 @@ def get_user_from_sessionid(sessionid):
 
 
 def _get_ip_location(ip: str)->tuple[str, str]:
-    get_ip_location_url = f'https://api.vore.top/api/IPdata?ip={ip}'
-    response = requests.get(get_ip_location_url).json()
+    get_ip_location_url = f'https://whois.pconline.com.cn/ipJson.jsp?ip={ip}&json=true'
+    default = {
+        'province': '广东省',
+        'city': '广州市'
+    }
     try:
-        if response['msg'] != 'SUCCESS':
-            raise KeyError("查询IP属地接口响应异常，请检查接口状态")
+        response = requests.get(get_ip_location_url).json()
+        # {
+        #   "ip":"120.197.18.205",
+        #   "pro":"广东省",
+        #   "proCode":"440000",
+        #   "city":"广州市",
+        #   "cityCode":"440100",
+        #   "region":"",
+        #   "regionCode":"0",
+        #   "addr":"广东省广州市 移通",
+        #   "regionNames":"",
+        #   "err":""
+        # }
 
-        # 根据观察，当info3为空串或为'基站'时获取的是国内属地信息，info1/info2分别对应省/市
-        # # 否则获取的是国外属地信息，info1/info2/info3分别对应国/省/市
-        # logger.info(response)
-        # if response['ipdata']['info3'] == '' or response['ipdata']['info3'] == '基站':
-        #     province = response['ipdata']['info1']
-        #     city = response['ipdata']['info2']
-        # else:
-        #     province = response['ipdata']['info2']
-        #     city = response['ipdata']['info3']
-        province = response['adcode']['p']
-        city = response['adcode']['c']
+        province = response["pro"]
+        city = response["city"]
         return {
             'province': province,
             'city': city
         }
     except KeyError as e:
-        # 接口异常是打印日志且将返回值均设置为空
+        # 接口异常是打印日志且将返回值均设置为默认广州
         logger.error(f'{e}', exc_info=True)
-        return None
+        return default
     except Exception as e:
         logger.opt(exception=True).error(f'{e}')
-        return None
+        return default
 
 
 def _get_weather_api_id_and_key(dir: str='/root')->tuple[str, str]:
@@ -304,7 +309,8 @@ if __name__ == '__main__':
     import requests
 
     ip = '120.197.18.205'
-    province, city = _get_ip_location(ip=ip)
+    location = _get_ip_location(ip=ip)
+    province, city = location['province'], location['city']
     apiId, getWeatherKey = _get_weather_api_id_and_key('/home/luoenhao/Documents')
     weather_info = _get_weather(apiId=apiId, apiKey=getWeatherKey, province=province, city=city)
     test = {
