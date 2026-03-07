@@ -47,36 +47,61 @@ def get_user_from_sessionid(sessionid):
     return User.objects.get(pk=user_id) if user_id else None
 
 
-def _get_ip_location(ip: str)->tuple[str, str]:
-    get_ip_location_url = f'https://whois.pconline.com.cn/ipJson.jsp?ip={ip}&json=true'
+def _get_ip_location(ip: str) -> dict:
+    """
+    根据IP地址获取地理位置信息
+    使用新的IP地理位置API: https://api.gznfpc.cn/api/v1/query
+    
+    Args:
+        ip: IP地址，支持IPv4/IPv6
+        
+    Returns:
+        dict: 包含province和city的字典
+    """
+    get_ip_location_url = f'https://api.gznfpc.cn/api/v1/query?ip={ip}'
     default = {
         'province': '广东省',
         'city': '广州市'
     }
     try:
-        response = requests.get(get_ip_location_url).json()
+        response = requests.get(get_ip_location_url, timeout=5).json()
+        # 新API响应格式:
         # {
-        #   "ip":"120.197.18.205",
-        #   "pro":"广东省",
-        #   "proCode":"440000",
-        #   "city":"广州市",
-        #   "cityCode":"440100",
-        #   "region":"",
-        #   "regionCode":"0",
-        #   "addr":"广东省广州市 移通",
-        #   "regionNames":"",
-        #   "err":""
+        #   "code": 0,
+        #   "message": "success",
+        #   "data": {
+        #     "ip": "8.8.8.8",
+        #     "country": "美国",
+        #     "province": "加利福尼亚",
+        #     "city": "芒廷维尤",
+        #     "isp": "Google LLC",
+        #     "country_code": "US",
+        #     "is_china": false,
+        #     "ip_version": 4
+        #   }
         # }
 
-        province = response["pro"]
-        city = response["city"]
+        if response.get('code') != 0:
+            logger.error(f"IP查询API返回错误: {response.get('message')}")
+            return default
+            
+        data = response.get('data', {})
+        province = data.get('province', '')
+        city = data.get('city', '')
+        
+        if not province or not city:
+            logger.warning(f"IP查询结果缺少省份或城市信息: {data}")
+            return default
+            
         return {
             'province': province,
             'city': city
         }
-    except KeyError as e:
-        # 接口异常是打印日志且将返回值均设置为默认广州
-        logger.error(f'{e}', exc_info=True)
+    except requests.exceptions.Timeout:
+        logger.error('IP地理位置查询请求超时')
+        return default
+    except requests.exceptions.RequestException as e:
+        logger.error(f'IP地理位置查询请求异常: {e}')
         return default
     except Exception as e:
         logger.opt(exception=True).error(f'{e}')
