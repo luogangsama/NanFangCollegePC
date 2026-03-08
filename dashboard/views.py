@@ -500,6 +500,23 @@ def build_text_response(to_user, from_user, content):
     """
 
 @logger.catch
+@session_check
+def change_duty_time(request):
+    '''
+    修改值班时间
+    '''
+    sessionid = request.COOKIES.get('sessionid')
+    user = get_user_from_sessionid(sessionid=sessionid)
+    if user.profile.identity == 'customer':
+        return JsonResponse({'message': 'Permission error'}, status=403)
+    data = json.loads(request.body)
+    new_duty_time = data['duty_time']
+    user_profile = UserProfile.objects.get(user=user)
+    user_profile.dutyTime = new_duty_time
+    user_profile.save()
+    return JsonResponse({'message': 'Success'}, status=200)
+
+@logger.catch
 @validMessageFromWeiXin
 def weixinTest(request):
     if request.method == "POST":
