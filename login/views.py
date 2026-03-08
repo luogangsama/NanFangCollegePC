@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from loguru import logger
 import json
 import hashlib
+import re
 from unit.views import session_check, get_user_from_sessionid
 
 
@@ -29,6 +30,17 @@ def signin(request):
         data = json.loads(request.body)
         username = data['name']
         password = data['password']
+
+        # 如果用户名是邮箱格式，先通过邮箱找到对应的用户名，再进行登录验证
+        email = r'^([a-zA-Z0-9]+[_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$'
+        if re.match(email, username):
+            try:
+                user = User.objects.get(email=username)
+                username = user.username
+            except User.DoesNotExist:
+                logger.error(f'{username}登录失败')
+                response = Response(message='USER NOT EXIST', method='POST')
+                return response
 
         # 验证登录
         user = authenticate(username=username, password=password)
