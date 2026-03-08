@@ -1,0 +1,55 @@
+概述：
+    获取工作人员值班时间
+请求 url：
+    https://localhost/api/dashboard/get_duty_time/
+请求方式：
+    GET
+参数：
+    无
+成功响应示例：
+    sessionid 成功验证：
+    成功查询：
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    {
+        'message': 'Success',
+        'dutyTime': '1'
+    }
+
+错误响应：
+    sessionid 过期：
+    HTTP/1.1 401 Unauthorized
+    Content-Type: application/json
+    {
+        'message': 'Session has expired'
+    }
+
+    sessionid 不存在：
+    HTTP/1.1 401 Unauthorized
+    Content-Type: application/json
+    {
+        'message': 'Invalid session'
+    }
+
+    无 cookies:
+    HTTP/1.1 400 Bad Request
+    Content-Type: application/json
+    {
+        'message': 'No sessionid cookie'
+    }
+
+    身份错误（普通用户）:
+    HTTP/1.1 403 Forbidden
+    Content-Type: application/json
+    {
+        'message': 'Permission error'
+    }
+
+说明：
+    dutyTime 字段说明：
+    - '1': 星期一
+    - '2': 星期二
+    - '3': 星期三
+    - '4': 星期四
+    - '5': 星期五
+    此接口仅对工作人员 (worker) 和管理员 (admin) 开放，普通用户 (customer) 无权访问
