@@ -513,6 +513,23 @@ def change_duty_time(request):
     return JsonResponse({'message': 'Success'}, status=200)
 
 @logger.catch
+@session_check
+def get_duty_time(request):
+    '''
+    获取工作人员值班时间
+    '''
+    sessionid = request.COOKIES.get('sessionid')
+    user = get_user_from_sessionid(sessionid=sessionid)
+    if user.profile.identity == 'customer':
+        return JsonResponse({'message': 'Permission error'}, status=403)
+    user_profile = UserProfile.objects.get(user=user)
+    duty_time = user_profile.dutyTime
+    return JsonResponse({
+        'message': 'Success',
+        'dutyTime': duty_time
+    }, status=200)
+
+@logger.catch
 @validMessageFromWeiXin
 def weixinTest(request):
     if request.method == "POST":
