@@ -18,6 +18,7 @@ from dashboard.views import reset_email
 from dashboard.views import get_staff_of_same_day
 from dashboard.views import get_report_of_same_day
 from dashboard.views import submit_rating
+from dashboard.views import change_duty_time
 from dashboard.views import weixinTest
 
 urlpatterns = [
@@ -40,6 +41,7 @@ urlpatterns = [
     path('today_workers/', get_staff_of_same_day),
     path('get_report_of_same_day/', get_report_of_same_day),
     path('submit_rating/', submit_rating),
+    path('change_duty_time/', change_duty_time),
 
     path('weixintest/', weixinTest)
 
