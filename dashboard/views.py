@@ -30,14 +30,18 @@ from unit.views import session_check, get_user_from_sessionid, validMessageFromW
 def get_user_info(request):
     '''
     获取用户信息，验证cookies可用后返回用户名
+    若用户角色为worker或admin，额外返回duty_time字段
     '''
     sessionid = request.COOKIES.get('sessionid')
     user = get_user_from_sessionid(sessionid=sessionid)
-    return JsonResponse({
+    response_data = {
         'message': 'Success',
         'username': user.username,
         'label': user.profile.identity
-    })
+    }
+    if user.profile.identity in ['worker', 'admin']:
+        response_data['duty_time'] = user.profile.dutyTime
+    return JsonResponse(response_data)
 
 
 @logger.catch

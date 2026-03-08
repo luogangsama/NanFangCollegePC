@@ -7,13 +7,24 @@
 参数：
     无
 成功响应示例：
+    普通用户（customer）：
     HTTP/1.1 200 OK
     Content-Type: application/json
     {
         'message': 'Success',
-        'username': 'username'
+        'username': 'username',
         'label': 'customer' # customer: 普通用户; worker: 维修人员; admin: 管理员
     }                       #报修界面中普通用户只有报修界面，维修人员有查看属于自己的订单界面同时有报修界面，管理员比维修人员多一个分配订单的界面
+
+    维修人员或管理员（worker/admin）：
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    {
+        'message': 'Success',
+        'username': 'username',
+        'label': 'worker',  # 或 'admin'
+        'duty_time': '1'    # 值班时间，仅当用户角色为worker或admin时返回
+    }
 
 错误响应：
     sessionid过期：
