@@ -3,6 +3,7 @@ from django.core.mail import send_mail
 from django.core.cache import cache
 from django.http import JsonResponse
 from NanFangCollegePC.settings import EMAIL_FROM
+from loguru import logger
 import random
 import json
 
@@ -16,9 +17,6 @@ def store_verification_code(email, code, timeout=300):
     cache.set(f"verification_code_{email}", code, timeout)
 
 def send_verification_email(email):
-    if not email:
-        return JsonResponse({'message': '邮箱不能为空'}, status=200)
-    
     # 生成验证码
     code = generate_verification_code()
     
@@ -29,11 +27,11 @@ def send_verification_email(email):
     subject = '广州南方学院PC志愿者服务队'
     message = f'您的验证码是：{code}，有效期为5分钟。'
     try:
-        status = send_mail(subject, message, EMAIL_FROM, [email], fail_silently=False)
-        return JsonResponse({'message': '验证码已发送'}, status=200)
+        send_mail(subject, message, EMAIL_FROM, [email], fail_silently=False)
+        return True
     except Exception as e:
-        print(e)
-        return JsonResponse({'message': '发送失败'}, status=200)
+        logger.error(f'发送验证码邮件失败: {e}')
+        return False
 
 def verify_code(email, input_code) -> bool:
     input_code = input_code.upper()

@@ -20,9 +20,10 @@ from django.urls import path, include
 from register.views import register
 from register.views import worker_register
 from register.views import register_send_code
-from login.views import signin
-from login.views import auto_login
-from login.views import forget_password
+from login.views import Signin
+from login.views import AutoSignin
+from login.views import ForgetPassword
+from login.views import ForgetPasswordSendCode
 from login.views import forget_password_send_code
 
 urlpatterns = [
@@ -30,10 +31,10 @@ urlpatterns = [
     path('api/users/register_send_code/', register_send_code),
     path('api/users/register/', register),
     path('api/users/worker_register/', worker_register),
-    path('api/users/login/', signin),
-    path('api/users/validate-session/', auto_login),
-    path('api/users/forget_password/', forget_password),
-    path('api/users/forget_password_send_code/', forget_password_send_code),
+    path('api/users/login/', Signin.as_view(), name='signin'),
+    path('api/users/validate-session/', AutoSignin.as_view(), name='auto_signin'),
+    path('api/users/forget_password/', ForgetPassword.as_view(), name='forget_password'),
+    path('api/users/forget_password_send_code/', ForgetPasswordSendCode.as_view(), name='forget_password_send_code'),
 
     path('api/dashboard/', include('dashboard.urls')),
     path('api/unit/', include('unit.urls')),
