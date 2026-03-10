@@ -259,3 +259,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
     ],
 }
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://gznfpc.cn",
+    "https://gznfpc.cn:443",
+]
