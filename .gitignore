@@ -3,6 +3,7 @@
 start.sh
 mysql-setting.xml
 db.sqlite3
+code.txt
 *.sqlite3
 /logs/
 websocketNote.md

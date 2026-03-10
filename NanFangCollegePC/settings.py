@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "common.apps.CommonConfig",
     "channels",
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
@@ -167,58 +168,76 @@ EMAIL_PORT = 465
 EMAIL_HOST_USER = "3070845578@qq.com"
 EMAIL_FROM = "3070845578@qq.com"
 try:
-    with open("/root/code.txt", "r") as f:
+    with open("./code.txt", "r") as f:
         EMAIL_HOST_PASSWORD = f.readline()
         EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD[0:-1]
 except:
     print("请将 code.txt放置于根目录下且确保其内容是正确的授权码，然后重启项目")
     EMAIL_HOST_PASSWORD = ""
 
-from NanFangCollegePC.loguru_config import logger  # 引入 loguru 的配置文件
+from loguru import logger
+import sys
+# 基础配置
+LOG_DIR = "logs"
+os.makedirs(LOG_DIR, exist_ok=True)
+logger.remove()
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,  # 保持为 False，避免禁用项目中其他已有的日志记录器:cite[2]:cite[10]
-    "formatters": {  # 建议添加 formatters 来定义日志格式
-        "verbose": {  # 一种详细的格式
-            "format": "[%(asctime)s] [%(levelname)s] [%(name)s:%(lineno)d] %(message)s",
-            "datefmt": "%Y-%m-%d %H:%M:%S",
-        },
-        "simple": {  # 一种简单的格式
-            "format": "[%(levelname)s] %(message)s"
-        },
-    },
-    "handlers": {
-        "loguru": {
-            "level": "DEBUG",  # 在 handler 级别设置 DEBUG，可以捕获更详细的日志，然后在 logger 级别过滤
-            "class": "NanFangCollegePC.loguru_config.InterceptHandler",  # 使用 loguru 的处理器
-            # 如果你在 InterceptHandler 中支持 formatter，可以在这里指定
-            # "formatter": "verbose",
-        },
-    },
-    "root": {
-        "handlers": ["loguru"],
-        "level": "INFO",  # Root logger 的级别
-    },
-    "loggers": {
-        "django": {  # 处理 Django 框架本身的日志
-            "handlers": ["loguru"],
-            "level": "INFO",  # 设置为 INFO 级别，可以记录 Django 的一般信息
-            "propagate": False,  # 不向更高级别的 logger（如 root）传播，避免重复记录
-        },
-        "django.request": {  # 专门处理 Django 请求相关的错误
-            "handlers": ["loguru"],
-            "level": "ERROR",  # 只记录 ERROR 及以上级别的请求错误
-            "propagate": False,
-        },
-        # 你可以考虑添加更多特定的 logger
-        # 'django.db.backends': { # 数据库查询日志
-        #     'handlers': ['loguru'],
-        #     'level': 'DEBUG', # DEBUG 级别会记录所有数据库查询，生产环境通常设为 INFO 或更高
-        #     'propagate': False,
-        # },
-    },
-}
+# 控制台输出
+logger.add(sys.stdout, level="INFO", colorize=True, catch=True)
+# 文件日志
+logger.add(
+    os.path.join(LOG_DIR, "app.log"),
+    level="DEBUG",
+    rotation="1 day",
+    retention="30 days",
+    compression="zip"
+)
+
+# from NanFangCollegePC.loguru_config import logger  # 引入 loguru 的配置文件
+
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,  # 保持为 False，避免禁用项目中其他已有的日志记录器:cite[2]:cite[10]
+#     "formatters": {  # 建议添加 formatters 来定义日志格式
+#         "verbose": {  # 一种详细的格式
+#             "format": "[%(asctime)s] [%(levelname)s] [%(name)s:%(lineno)d] %(message)s",
+#             "datefmt": "%Y-%m-%d %H:%M:%S",
+#         },
+#         "simple": {  # 一种简单的格式
+#             "format": "[%(levelname)s] %(message)s"
+#         },
+#     },
+#     "handlers": {
+#         "loguru": {
+#             "level": "DEBUG",  # 在 handler 级别设置 DEBUG，可以捕获更详细的日志，然后在 logger 级别过滤
+#             "class": "NanFangCollegePC.loguru_config.InterceptHandler",  # 使用 loguru 的处理器
+#             # 如果你在 InterceptHandler 中支持 formatter，可以在这里指定
+#             # "formatter": "verbose",
+#         },
+#     },
+#     "root": {
+#         "handlers": ["loguru"],
+#         "level": "INFO",  # Root logger 的级别
+#     },
+#     "loggers": {
+#         "django": {  # 处理 Django 框架本身的日志
+#             "handlers": ["loguru"],
+#             "level": "INFO",  # 设置为 INFO 级别，可以记录 Django 的一般信息
+#             "propagate": False,  # 不向更高级别的 logger（如 root）传播，避免重复记录
+#         },
+#         "django.request": {  # 专门处理 Django 请求相关的错误
+#             "handlers": ["loguru"],
+#             "level": "ERROR",  # 只记录 ERROR 及以上级别的请求错误
+#             "propagate": False,
+#         },
+#         # 你可以考虑添加更多特定的 logger
+#         # 'django.db.backends': { # 数据库查询日志
+#         #     'handlers': ['loguru'],
+#         #     'level': 'DEBUG', # DEBUG 级别会记录所有数据库查询，生产环境通常设为 INFO 或更高
+#         #     'propagate': False,
+#         # },
+#     },
+# }
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
