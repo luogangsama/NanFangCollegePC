@@ -254,10 +254,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 
 REST_FRAMEWORK = {
-    # 全局默认允许匿名访问（所有视图默认无需登录）
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
     ],
-    # 如需禁用默认认证（可选，避免不必要的认证检查）
-    'DEFAULT_AUTHENTICATION_CLASSES': [],
 }
