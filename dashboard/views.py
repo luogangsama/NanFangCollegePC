@@ -72,9 +72,10 @@ def call_report(request):
     钉钉播报
     '''
     # 获取当前所有未分配订单
-    unassigned_reports = call_report_table.objects.filter(status='0').order_by('-pk')
+    unassigned_reports = call_report_table.objects.filter(status='0').order_by('+pk')
     msg = "未分配订单列表：\n"
     for report in unassigned_reports:
+        msg += f"订单ID: {report.id}\n"
         msg += f"用户名: {report.user.username}\n"
         msg += f"电话: {report.userPhoneNumber}\n"
         msg += f"地址: {report.address}\n"
