@@ -1,20 +1,14 @@
-from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
 from django.utils import timezone
-from django.utils.timezone import now
 from django.http import JsonResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from loguru import logger
-import json
-import hashlib
 import re
-from unit.views import session_check, get_user_from_sessionid
 
 
 # def Response(message:str, method:str):
@@ -58,7 +52,7 @@ class Signin(APIView):
 
 class AutoSignin(APIView):
     '''
-    验证sessionid后自动登录
+    自动登录接口
     '''
     permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -66,18 +60,6 @@ class AutoSignin(APIView):
 
 
 from SMS.views import verify_code, send_verification_email
-def forget_password_send_code(request):
-    '''
-    忘记密码界面发送sms_code
-    '''
-    email = json.loads(request.body)['email']
-    logger.info(f"邮箱: {email}")
-    result = send_verification_email(email)
-    if result:
-        return JsonResponse({'message': '验证码已发送'})
-    else:
-        return JsonResponse({'message': '发送失败'}, status=500)
-
 class ForgetPasswordSendCode(APIView):
     '''
     忘记密码界面发送sms_code
@@ -117,28 +99,3 @@ class ForgetPassword(APIView):
                 return Response({'message': '该账号未注册'}, status=status.HTTP_404_NOT_FOUND)
         else:
             return Response({'message': '验证码失效'}, status=status.HTTP_401_UNAUTHORIZED)
-
-def forget_password(request):
-    '''
-    忘记密码后重置密码
-    '''
-    data = json.loads(request.body)
-    email = data['email']
-    code = data['code']
-    status = verify_code(email, code)
-    if status == True:
-        # 验证通过
-        try:
-            new_password = data['new_password']
-            user = User.objects.get(email=email)
-            user.set_password(new_password)
-            user.save()
-
-            logger.success(f'{user.username}修改密码成功')
-
-            return JsonResponse({'message': '密码修改成功'})
-
-        except User.DoesNotExist:
-            return JsonResponse({'message': '该账号未注册'}, status=400)
-    else:
-        return JsonResponse({'message': '验证码失效'}, status=400)
