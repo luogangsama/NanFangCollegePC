@@ -21,7 +21,7 @@ import time
 from SMS.views import send_verification_email
 from SMS.views import verify_code
 
-from unit.views import session_check, get_user_from_sessionid, validMessageFromWeiXin
+from unit.views import session_check, get_user_from_sessionid, validMessageFromWeiXin, order_broadcast_to_dingtalk
 
 # Create your views here.
 
@@ -67,6 +67,21 @@ def call_report(request):
         call_date=call_date,
         weekday=weekday,
     )
+
+    '''
+    钉钉播报
+    '''
+    # 获取当前所有未分配订单
+    unassigned_reports = call_report_table.objects.filter(status='0').order_by('-pk')
+    msg = "未分配订单列表：\n"
+    for report in unassigned_reports:
+        msg += f"用户名: {report.user.username}\n"
+        msg += f"电话: {report.userPhoneNumber}\n"
+        msg += f"地址: {report.address}\n"
+        msg += f"问题: {report.issue}\n"
+        msg += f"预约时间: {report.date}\n"
+        msg += "========================\n"
+    order_broadcast_to_dingtalk(msg)
     return JsonResponse({'message': 'Success', 'orderDetails': '订单提交成功'}, status=200)
 
 @logger.catch

@@ -193,6 +193,19 @@ logger.add(
     compression="zip"
 )
 
+class DingTalkRobotOptions:
+    def __init__(self, xml_file):
+        self.options = {}
+        tree = ET.parse(xml_file)
+        root = tree.getroot()
+        for child in root:
+            self.options[child.tag] = child.text
+
+    def get_option(self, key, default=None):
+        return self.options.get(key, default)
+
+DINGTALK_ROBOT_OPTIONS = DingTalkRobotOptions("dingtalk-robot-setting.xml")
+
 # from NanFangCollegePC.loguru_config import logger  # 引入 loguru 的配置文件
 
 # LOGGING = {
