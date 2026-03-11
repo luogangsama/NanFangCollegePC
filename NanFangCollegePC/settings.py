@@ -262,5 +262,9 @@ REST_FRAMEWORK = {
 
 CSRF_TRUSTED_ORIGINS = [
     "https://gznfpc.cn",
-    "https://gznfpc.cn:443",
 ]
+
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SECURE = True
+CORS_ALLOW_CREDENTIALS = True

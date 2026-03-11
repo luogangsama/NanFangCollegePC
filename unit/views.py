@@ -329,6 +329,14 @@ def userWeather(request):
         logger.opt(exception=True).error(f'{e}')
         return JsonResponse({'message': '天气业务异常'}, status=500)
 
+from django.http import JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
+
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    return JsonResponse({
+        "detail": "CSRF cookie set"
+    })
 
 if __name__ == '__main__':
     import requests
