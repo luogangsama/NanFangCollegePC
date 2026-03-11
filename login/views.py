@@ -30,7 +30,7 @@ class Signin(APIView):
     登录接口
     '''
     def post(self, request):
-        data = json.loads(request.body)
+        data = request.data
         username = data['name']
         password = data['password']
 
@@ -97,7 +97,7 @@ class ForgetPassword(APIView):
         '''
         忘记密码后重置密码
         '''
-        data = json.loads(request.body)
+        data = request.data
         email = data['email']
         code = data['code']
         result = verify_code(email, code)
