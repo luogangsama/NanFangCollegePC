@@ -24,7 +24,6 @@ from login.views import Signin
 from login.views import AutoSignin
 from login.views import ForgetPassword
 from login.views import ForgetPasswordSendCode
-from login.views import forget_password_send_code
 
 urlpatterns = [
     path('admin/', admin.site.urls),
