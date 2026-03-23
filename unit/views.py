@@ -56,7 +56,7 @@ def get_user_from_sessionid(sessionid):
 def _get_ip_location(ip: str) -> dict:
     """
     根据IP地址获取地理位置信息
-    使用新的IP地理位置API: https://api.gznfpc.cn/api/v1/query
+    使用新的IP地理位置API: https://api.gznfpc.cn/api/v1/
     
     Args:
         ip: IP地址，支持IPv4/IPv6
@@ -64,7 +64,7 @@ def _get_ip_location(ip: str) -> dict:
     Returns:
         dict: 包含province和city的字典
     """
-    get_ip_location_url = f'https://api.gznfpc.cn/api/v1/query?ip={ip}'
+    get_ip_location_url = f'https://api.gznfpc.cn/api/v1/?ip={ip}'
     default = {
         'province': '广东省',
         'city': '广州市'
