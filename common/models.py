@@ -64,3 +64,55 @@ class report_message_board_record(models.Model):
     message = models.CharField(max_length=500)
     # 留言时间
     date = models.CharField(max_length=50)
+
+
+class OrderAssignment(models.Model):
+    """
+    订单分配关联表 - 支持一个订单分配给多个维修人员
+    """
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    report = models.ForeignKey(
+        call_report_table, 
+        on_delete=models.CASCADE, 
+        related_name='assignments',
+        verbose_name='订单'
+    )
+    worker = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='order_assignments',
+        verbose_name='维修人员'
+    )
+    assigned_at = models.DateTimeField(auto_now_add=True, verbose_name='分配时间')
+    assigned_by = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='assignment_operations',
+        verbose_name='分配人'
+    )
+    status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES, 
+        default='active',
+        verbose_name='状态'
+    )
+
+    class Meta:
+        db_table = 'order_assignments'
+        verbose_name = '订单分配记录'
+        verbose_name_plural = '订单分配记录'
+        unique_together = ['report', 'worker']
+        indexes = [
+            models.Index(fields=['report'], name='idx_order_assignments_report'),
+            models.Index(fields=['worker'], name='idx_order_assignments_worker'),
+        ]
+
+    def __str__(self):
+        return f"订单 {self.report_id} -> {self.worker.username}"

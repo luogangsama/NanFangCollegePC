@@ -3,7 +3,8 @@ from django.contrib.sessions.models import Session
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.utils.timezone import now
-from common.models import call_report_table
+from django.db import transaction
+from common.models import call_report_table, OrderAssignment
 from common.models import UserProfile
 from django.contrib.auth.models import User
 from django.contrib.auth import logout, login
@@ -117,13 +118,25 @@ def user_get_history_report(request):
 @logger.catch
 @session_check
 def worker_get_report_list(request):
-    '''
+    """
     获取维修员的历史订单
-    '''
+    支持多人员分配：通过 OrderAssignment 表查询
+    """
     sessionid = request.COOKIES.get('sessionid')
-    my_reports = call_report_table.objects.all().order_by('-pk').filter(workerName=get_user_from_sessionid(sessionid=sessionid))
+    worker = get_user_from_sessionid(sessionid=sessionid)
+    
+    assignment_report_ids = OrderAssignment.objects.filter(
+        worker=worker,
+        status='active'
+    ).values_list('report_id', flat=True)
+    
+    my_reports = call_report_table.objects.all().order_by('-pk').filter(
+        id__in=assignment_report_ids
+    )
+    
     if len(my_reports) == 0:
         return JsonResponse({'message': 'No my report'}, status=200)
+    
     reports = []
     for report in my_reports:
         reports.append({
@@ -280,50 +293,121 @@ def renew_password(request):
 @logger.catch
 @session_check
 def assign_order(request):
-    '''
-    管理员分配订单
-    '''
+    """
+    管理员分配订单 - 支持多人员分配
+    支持两种请求格式:
+    1. 新格式: {"reportId": "xxx", "workerNames": ["张三", "李四"]}
+    2. 向后兼容: {"reportId": "xxx", "workerName": "张三"}
+    """
+    MAX_WORKERS_PER_ORDER = 5
+    
     sessionid = request.COOKIES.get('sessionid')
     user = get_user_from_sessionid(sessionid=sessionid)
     if user.profile.identity != 'admin':
-        # 权限不符合
-        return JsonResponse({'message': 'Permission error'}, status=200)
+        return JsonResponse({'message': 'Permission error'}, status=403)
+    
     data = json.loads(request.body)
-
+    report_id = data.get('reportId')
+    worker_names = data.get('workerNames', [])
+    
+    if not worker_names:
+        single_worker = data.get('workerName')
+        if single_worker:
+            worker_names = [single_worker]
+    
+    if not report_id or not worker_names:
+        return JsonResponse({'message': 'Invalid parameters'}, status=400)
+    
+    if len(worker_names) > MAX_WORKERS_PER_ORDER:
+        return JsonResponse({
+            'message': 'Max workers exceeded',
+            'error': {
+                'code': 'MAX_WORKERS_EXCEEDED',
+                'details': f'单个订单最多分配 {MAX_WORKERS_PER_ORDER} 名维修人员'
+            }
+        }, status=400)
+    
     try:
-        worker_name = data['workerName']
-        worker = User.objects.get(username=worker_name)
-        if worker.profile.identity not in ['worker', 'admin']:
-            # 权限不符合
-            return JsonResponse({'message': 'Permission error'}, status=403)
-    except User.DoesNotExist:
-        return JsonResponse({'message': 'This worker is no exist'}, status=200)
-
+        report_id_int = int(report_id)
+        report = call_report_table.objects.get(id=report_id_int)
+    except (ValueError, call_report_table.DoesNotExist):
+        return JsonResponse({'message': 'This report is no exist'}, status=404)
+    
+    if report.status != '0':
+        return JsonResponse({'message': 'This report is allocated'}, status=400)
+    
+    workers = []
+    for worker_name in worker_names:
+        try:
+            worker = User.objects.get(username=worker_name)
+            if worker.profile.identity not in ['worker', 'admin']:
+                return JsonResponse({
+                    'message': 'Invalid worker',
+                    'error': {
+                        'code': 'INVALID_WORKER',
+                        'details': f'维修人员 {worker_name} 权限不足'
+                    }
+                }, status=400)
+            workers.append(worker)
+        except User.DoesNotExist:
+            return JsonResponse({
+                'message': 'Invalid worker',
+                'error': {
+                    'code': 'INVALID_WORKER',
+                    'details': f'维修人员 {worker_name} 不存在'
+                }
+            }, status=400)
+    
+    existing_assignments = OrderAssignment.objects.filter(
+        report_id=report_id_int,
+        worker__in=workers,
+        status='active'
+    )
+    if existing_assignments.exists():
+        existing_names = [a.worker.username for a in existing_assignments]
+        return JsonResponse({
+            'message': 'Duplicate assignment',
+            'error': {
+                'code': 'DUPLICATE_ASSIGNMENT',
+                'details': f'部分维修人员已被分配到此订单: {", ".join(existing_names)}'
+            }
+        }, status=400)
+    
     try:
-        report_id = int(data['reportId'])
-        report = call_report_table.objects.get(id=report_id)
-        if report.status != '0':
-            # 订单已被分配
-            return JsonResponse({'message': 'This report is allocated'}, status=200)
-        # 向订单表中填入相关信息并改变状态
-        report.workerName = worker
-        report.workerPhoneNumber = UserProfile.objects.get(user=worker).phoneNumber
-        report.status = '1'
-        report.save()
-
-        return JsonResponse({'message': 'Success'}, status=200)
-    except call_report_table.DoesNotExist:
-        return JsonResponse({'message': 'This report is no exist'}, status=200)
+        with transaction.atomic():
+            for worker in workers:
+                OrderAssignment.objects.create(
+                    report=report,
+                    worker=worker,
+                    assigned_by=user
+                )
+            
+            report.status = '1'
+            report.save()
+        
+        assigned_at = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        return JsonResponse({
+            'message': 'Success',
+            'data': {
+                'reportId': report_id,
+                'assignedWorkers': worker_names,
+                'assignedAt': assigned_at
+            }
+        }, status=200)
+        
+    except Exception as e:
+        logger.error(f'分配订单失败: {str(e)}')
+        return JsonResponse({'message': 'Internal server error'}, status=500)
 
 @logger.catch
 @session_check
 def complete_report(request):
-    '''
+    """
     用户结单
-    '''
+    同时更新 OrderAssignment 状态为 completed
+    """
     sessionid = request.COOKIES.get('sessionid')
     user = get_user_from_sessionid(sessionid=sessionid)
-    # 获取请求消息体中的内容
     data = json.loads(request.body)
     reportId = int(data['reportId'])
     try:
@@ -332,27 +416,42 @@ def complete_report(request):
         return JsonResponse({'message': 'This report is no exist'}, status=200)
     if report.status == '2':
         return JsonResponse({'message': 'This report is completed'}, status=200)
+    
+    with transaction.atomic():
+        report.status = '2'
+        report.save()
         
-    report.status = '2'
-    report.save()
+        OrderAssignment.objects.filter(
+            report=report,
+            status='active'
+        ).update(status='completed')
+    
     return JsonResponse({'message': 'Success'}, status=200)
 
 @logger.catch
 @session_check
 def cancel_report(request):
-    '''
+    """
     用户撤销报单
-    '''
+    同时更新 OrderAssignment 状态为 cancelled
+    """
     sessionid = request.COOKIES.get('sessionid')
     user = get_user_from_sessionid(sessionid=sessionid)
-    # 获取请求消息体中的内容
     data = json.loads(request.body)
     reportId = int(data['reportId'])
 
     try:
         report = call_report_table.objects.get(id=reportId)
-        report.status = '3'
-        report.save()
+        
+        with transaction.atomic():
+            report.status = '3'
+            report.save()
+            
+            OrderAssignment.objects.filter(
+                report=report,
+                status='active'
+            ).update(status='cancelled')
+        
         return JsonResponse({'message': 'Success'}, status=200)
     except:
         return JsonResponse({'message': 'This report is no exist'}, status=200)
@@ -392,46 +491,69 @@ def reset_email(request):
 @logger.catch
 @session_check
 def get_staff_of_same_day(request):
-    '''
+    """
     获取与分单人员同一天值班的人员名单
-    '''
+    返回包含当前订单数的维修人员列表
+    """
     sessionid = request.COOKIES.get('sessionid')
     user = get_user_from_sessionid(sessionid=sessionid)
     staffs = UserProfile.objects.filter(
         dutyTime=UserProfile.objects.get(user=user).dutyTime
     )
+    
     return_data = {
         'message': 'Success',
         'workers': []
-        }
+    }
 
     for staff in staffs:
-        return_data['workers'].append({'username': staff.user.username})
-    # logger.success(f'与{user.username}同一天工作的人员名单:\n{return_data["workers"]}')
+        current_assignments = OrderAssignment.objects.filter(
+            worker=staff.user,
+            status='active'
+        ).count()
+        
+        return_data['workers'].append({
+            'username': staff.user.username,
+            'available': True,
+            'currentAssignments': current_assignments
+        })
+    
     return JsonResponse(return_data, status=200)
    
 @logger.catch
 @session_check
 def get_report_of_same_day(request):
-    '''
+    """
     分单人员获取预约于当天的订单
-    '''
+    返回包含多人员分配信息的订单列表
+    """
     sessionid = request.COOKIES.get('sessionid')
     user = get_user_from_sessionid(sessionid=sessionid)
     if user.profile.identity != 'admin':
-        return JsonResponse({'message': 'Permission error'})
+        return JsonResponse({'message': 'Permission error'}, status=403)
+    
     reports = call_report_table.objects.all().order_by('-pk').filter(
         weekday=UserProfile.objects.get(user=user).dutyTime
-        )
+    )
+    
     return_data = {
         'message': 'Success',
         'reports': []
-        }
+    }
+    
     for report in reports:
-        if report.workerName:
-            workerName = report.workerName.username
-        else:
-            workerName = 'None'
+        assignments = OrderAssignment.objects.filter(
+            report=report,
+            status='active'
+        ).order_by('assigned_at')
+        
+        worker_names = [a.worker.username for a in assignments]
+        
+        if not worker_names and report.workerName:
+            worker_names = [report.workerName.username]
+        
+        worker_name_str = ', '.join(worker_names) if worker_names else 'None'
+        
         return_data['reports'].append({
             'reportId': report.id,
             'userPhoneNumber': report.userPhoneNumber,
@@ -440,9 +562,10 @@ def get_report_of_same_day(request):
             'status': report.status,
             'date': report.date,
             'call_date': report.call_date,
-            'workerName': workerName,
+            'workerNames': worker_names,
+            'workerName': worker_name_str,
         })
-    # logger.success(f'{user.username}管理的订单:\n{return_data["reports"]}')
+    
     return JsonResponse(return_data, status=200)
 
 @logger.catch
