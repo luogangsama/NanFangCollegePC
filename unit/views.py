@@ -8,12 +8,18 @@ if __name__ != '__main__':
 
 from loguru import logger
 from datetime import timedelta
+from NanFangCollegePC.settings import DINGTALK_ROBOT_OPTIONS
 import requests
 import hashlib
 import json
 import os
 import base64
 import uuid
+import argparse
+import logging
+import time
+import hmac
+import urllib.parse
 
 def session_check(func):
     '''
@@ -329,6 +335,93 @@ def userWeather(request):
         logger.opt(exception=True).error(f'{e}')
         return JsonResponse({'message': '天气业务异常'}, status=500)
 
+from django.http import JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
+
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    return JsonResponse({
+        "detail": "CSRF cookie set"
+    })
+
+def define_options():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--access_token', dest='access_token', required=True,
+        help='机器人webhook的access_token from https://open.dingtalk.com/document/orgapp/obtain-the-webhook-address-of-a-custom-robot '
+    )
+    parser.add_argument(
+        '--secret', dest='secret', required=True,
+        help='secret from https://open.dingtalk.com/document/orgapp/customize-robot-security-settings#title-7fs-kgs-36x'
+    )
+    parser.add_argument(
+        '--userid', dest='userid',
+        help='待 @ 的钉钉用户ID，多个用逗号分隔 from https://open.dingtalk.com/document/orgapp/basic-concepts-beta#title-o8w-yj2-t8x '
+    )
+    parser.add_argument(
+        '--at_mobiles', dest='at_mobiles',
+        help='待 @ 的手机号，多个用逗号分隔'
+    )
+    parser.add_argument(
+        '--is_at_all', dest='is_at_all', action='store_true',
+        help='是否@所有人，指定则为True，不指定为False'
+    )
+    parser.add_argument(
+        '--msg', dest='msg', default='钉钉，让进步发生',
+        help='要发送的消息内容'
+    )
+    return parser.parse_args()
+
+
+def send_custom_robot_group_message(access_token, secret, msg, at_user_ids=None, at_mobiles=None, is_at_all=False):
+    """
+    发送钉钉自定义机器人群消息
+    :param access_token: 机器人webhook的access_token
+    :param secret: 机器人安全设置的加签secret
+    :param msg: 消息内容
+    :param at_user_ids: @的用户ID列表
+    :param at_mobiles: @的手机号列表
+    :param is_at_all: 是否@所有人
+    :return: 钉钉API响应
+    """
+    logger.info(f"access_token: {access_token}, secret: {secret}")
+    timestamp = str(round(time.time() * 1000))
+    string_to_sign = f'{timestamp}\n{secret}'
+    hmac_code = hmac.new(secret.encode('utf-8'), string_to_sign.encode('utf-8'), digestmod=hashlib.sha256).digest()
+    sign = urllib.parse.quote_plus(base64.b64encode(hmac_code))
+
+    url = f'https://oapi.dingtalk.com/robot/send?access_token={access_token}&timestamp={timestamp}&sign={sign}'
+
+    body = {
+        "at": {
+            "isAtAll": str(is_at_all).lower(),
+            "atUserIds": at_user_ids or [],
+            "atMobiles": at_mobiles or []
+        },
+        "text": {
+            "content": msg
+        },
+        "msgtype": "text"
+    }
+    headers = {'Content-Type': 'application/json'}
+    resp = requests.post(url, json=body, headers=headers)
+    logger.info(f"钉钉订单播报机器人群消息响应：{resp.text}")
+    return resp.json()
+
+def order_broadcast_to_dingtalk(msg):
+    options = DINGTALK_ROBOT_OPTIONS
+    # 处理 @用户ID
+    at_user_ids = []
+    # 处理 @手机号
+    at_mobiles = []
+    send_custom_robot_group_message(
+        access_token=options.get_option('access_token'),
+        secret=options.get_option('secret'),
+        msg=msg,
+        at_user_ids=at_user_ids,
+        at_mobiles=at_mobiles,
+        is_at_all=True
+    )
 
 if __name__ == '__main__':
     import requests

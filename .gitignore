@@ -2,7 +2,9 @@
 参考文档.md
 start.sh
 mysql-setting.xml
+dingtalk-robot-setting.xml
 db.sqlite3
+code.txt
 *.sqlite3
 /logs/
 websocketNote.md

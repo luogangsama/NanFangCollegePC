@@ -1,33 +1,30 @@
-from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
 from django.utils import timezone
-from django.utils.timezone import now
 from django.http import JsonResponse
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from loguru import logger
-import json
-import hashlib
 import re
-from unit.views import session_check, get_user_from_sessionid
 
 
-def Response(message:str, method:str):
-    response = JsonResponse({'message': message})
-    response['Access-Control-Allow-Origin'] = '*'
-    response['Access-Control-Allow-Methods'] = method
-    response['Access-Control-Allow-Headers'] = 'Content-Type'
-    return response
+# def Response(message:str, method:str):
+#     response = JsonResponse({'message': message})
+#     response['Access-Control-Allow-Origin'] = '*'
+#     response['Access-Control-Allow-Methods'] = method
+#     response['Access-Control-Allow-Headers'] = 'Content-Type'
+#     return response
 
 
-
-def signin(request):
+class Signin(APIView):
     '''
-    登录
+    登录接口
     '''
-    if request.method == 'POST':
-        data = json.loads(request.body)
+    def post(self, request):
+        data = request.data
         username = data['name']
         password = data['password']
 
@@ -39,8 +36,7 @@ def signin(request):
                 username = user.username
             except User.DoesNotExist:
                 logger.error(f'{username}登录失败')
-                response = Response(message='USER NOT EXIST', method='POST')
-                return response
+                return Response({'message': 'USER NOT EXIST'}, status=status.HTTP_401_UNAUTHORIZED)
 
         # 验证登录
         user = authenticate(username=username, password=password)
@@ -49,54 +45,57 @@ def signin(request):
             login(request=request, user=user)
 
             logger.success(f'{user.username}登录')
-            response = Response(message='Success', method='POST')
-            return response
+            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
         else:
             logger.error(f'{username}登录失败')
-            response = Response(message='PASSWORD ERROR', method='POST')
-            return response
+            return Response({'message': 'USERNAME AND PASSWORD ARE REQUIRED'}, status=status.HTTP_401_UNAUTHORIZED)
 
-@session_check
-def auto_login(request):
+class AutoSignin(APIView):
     '''
-    验证sessionid后自动登录
+    自动登录接口
     '''
-    sessionid = request.COOKIES.get('sessionid')
-    user = get_user_from_sessionid(sessionid)
-    # 验证sessionid合法后返回登录成功
-    logger.success(f'{user.username}自动登录成功')
-    return JsonResponse({'message': 'Success'}, status=200)
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+
 
 from SMS.views import verify_code, send_verification_email
-def forget_password_send_code(request):
+class ForgetPasswordSendCode(APIView):
     '''
     忘记密码界面发送sms_code
     '''
-    email = json.loads(request.body)['email']
-    return send_verification_email(email)
+    def post(self, request):
+        email = request.data.get('email')
+        logger.info(f"邮箱: {email}")
+        result = send_verification_email(email)
+        if result:
+            return Response({'message': '验证码已发送'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': '发送失败'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-def forget_password(request):
-    '''
-    忘记密码后重置密码
-    '''
-    data = json.loads(request.body)
-    email = data['email']
-    code = data['code']
-    status = verify_code(email, code)
-    if status == True:
-        # 验证通过
-        try:
-            new_password = data['new_password']
-            user = User.objects.get(email=email)
-            user.set_password(new_password)
-            user.save()
+class ForgetPassword(APIView):
+    def post(self, request):
+        '''
+        忘记密码后重置密码
+        '''
+        data = request.data
+        email = data['email']
+        code = data['code']
+        result = verify_code(email, code)
+        if result == True:
+            # 验证通过
+            try:
+                new_password = data['new_password']
+                user = User.objects.get(email=email)
+                user.set_password(new_password)
+                user.save()
 
-            logger.success(f'{user.username}修改密码成功')
+                logger.success(f'{user.username}修改密码成功')
 
-            return JsonResponse({'message': '密码修改成功'})
+                return Response({'message': '密码修改成功'}, status=status.HTTP_200_OK)
 
-        except User.DoesNotExist:
-            return JsonResponse({'message': '该账号未注册'}, status=400)
-    else:
-        return JsonResponse({'message': '验证码失效'}, status=400)
+            except User.DoesNotExist:
+                return Response({'message': '该账号未注册'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({'message': '验证码失效'}, status=status.HTTP_401_UNAUTHORIZED)
