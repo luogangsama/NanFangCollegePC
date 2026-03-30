@@ -417,6 +417,8 @@ class DashboardTests(TestCase):
         UserProfile.objects.create(
             user=self.user, # 在用户信息表中初始化一行
             phoneNumber='12345678910',
+            identity='worker',
+            dutyTime='5',
         )
 
     def test_call_report_submission(self):
@@ -438,3 +440,13 @@ class DashboardTests(TestCase):
         time.sleep(2)
         response = self.client.post('/api/dashboard/call_report/', data, content_type='application/json')
         self.assertEqual(response.status_code, 200)
+
+    def test_get_duty_time(self):
+        response = self.client.login(username='testuser', password='testpassword')
+        logger.info(f'登录结果: {response}')
+        response = self.client.get('/api/dashboard/get_duty_time/')
+        self.assertEqual(response.status_code, 200)
+        response_body = response.json()
+        self.assertEqual(response_body['message'], 'Success')
+        self.assertEqual(response_body['dutyTime'], '5')
+        logger.info(f'获取到的值班时间: {response_body["dutyTime"]}')

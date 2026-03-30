@@ -22,6 +22,8 @@ from dashboard.views import change_duty_time
 from dashboard.views import get_duty_time
 from dashboard.views import weixinTest
 
+from dashboard.views import Get_duty_time
+
 urlpatterns = [
     # path('getWeatherApiKey/', get_weather),
     path('call_report/', call_report),
@@ -43,7 +45,8 @@ urlpatterns = [
     path('get_report_of_same_day/', get_report_of_same_day),
     path('submit_rating/', submit_rating),
     path('change_duty_time/', change_duty_time),
-    path('get_duty_time/', get_duty_time),
+    # path('get_duty_time/', get_duty_time),
+    path('get_duty_time/', Get_duty_time.as_view(), name='Get_duty_time'),
 
     path('weixintest/', weixinTest)
 

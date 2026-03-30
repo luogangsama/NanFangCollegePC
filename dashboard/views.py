@@ -10,6 +10,10 @@ from django.contrib.auth.models import User
 from django.contrib.auth import logout, login
 from django.contrib.auth.hashers import check_password
 from django.core.cache import cache
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
 
 from loguru import logger
 import hashlib
@@ -651,22 +655,38 @@ def change_duty_time(request):
     user_profile.save()
     return JsonResponse({'message': 'Success'}, status=200)
 
-@logger.catch
-@session_check
-def get_duty_time(request):
+# @logger.catch
+# @session_check
+# def get_duty_time(request):
+#     '''
+#     获取工作人员值班时间
+#     '''
+#     sessionid = request.COOKIES.get('sessionid')
+#     user = get_user_from_sessionid(sessionid=sessionid)
+#     if user.profile.identity == 'customer':
+#         return JsonResponse({'message': 'Permission error'}, status=403)
+#     user_profile = UserProfile.objects.get(user=user)
+#     duty_time = user_profile.dutyTime
+#     return JsonResponse({
+#         'message': 'Success',
+#         'dutyTime': duty_time
+#     }, status=200)
+
+class Get_duty_time(APIView):
     '''
     获取工作人员值班时间
     '''
-    sessionid = request.COOKIES.get('sessionid')
-    user = get_user_from_sessionid(sessionid=sessionid)
-    if user.profile.identity == 'customer':
-        return JsonResponse({'message': 'Permission error'}, status=403)
-    user_profile = UserProfile.objects.get(user=user)
-    duty_time = user_profile.dutyTime
-    return JsonResponse({
-        'message': 'Success',
-        'dutyTime': duty_time
-    }, status=200)
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = request.user
+        if user.profile.identity == 'customer':
+            return Response({'message': 'Permission error'}, status=status.HTTP_403_FORBIDDEN)
+        user_profile = UserProfile.objects.get(user=user)
+        duty_time = user_profile.dutyTime
+        return Response({
+            'message': 'Success',
+            'dutyTime': duty_time
+        }, status=status.HTTP_200_OK)
 
 @logger.catch
 @validMessageFromWeiXin
