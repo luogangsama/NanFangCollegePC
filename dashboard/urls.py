@@ -19,7 +19,7 @@ from dashboard.views import get_staff_of_same_day
 from dashboard.views import get_report_of_same_day
 from dashboard.views import submit_rating
 from dashboard.views import change_duty_time
-from dashboard.views import get_duty_time
+# from dashboard.views import get_duty_time
 from dashboard.views import weixinTest
 
 from dashboard.views import Get_duty_time
