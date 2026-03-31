@@ -421,17 +421,34 @@ def complete_report(request):
     """
     用户结单
     同时更新 OrderAssignment 状态为 completed
+    已修复IDOR漏洞：验证用户权限
     """
     sessionid = request.COOKIES.get('sessionid')
     user = get_user_from_sessionid(sessionid=sessionid)
     data = json.loads(request.body)
-    reportId = int(data['reportId'])
+    
+    try:
+        reportId = int(data.get('reportId'))
+    except (TypeError, ValueError):
+        return JsonResponse({'message': '无效的订单ID'}, status=400)
+    
     try:
         report = call_report_table.objects.get(pk=reportId)
-    except:
-        return JsonResponse({'message': 'This report is no exist'}, status=200)
+    except call_report_table.DoesNotExist:
+        return JsonResponse({'message': '订单不存在'}, status=404)
+    
+    is_owner = report.user == user
+    is_assigned_worker = OrderAssignment.objects.filter(
+        report=report, worker=user, status='active'
+    ).exists()
+    is_admin = user.is_staff or user.is_superuser
+    
+    if not (is_owner or is_assigned_worker or is_admin):
+        logger.warning(f'用户 {user.username} 尝试访问不属于自己的订单 {reportId}')
+        return JsonResponse({'message': '无权操作此订单'}, status=403)
+    
     if report.status == '2':
-        return JsonResponse({'message': 'This report is completed'}, status=200)
+        return JsonResponse({'message': '订单已完成'}, status=400)
     
     with transaction.atomic():
         report.status = '2'
@@ -442,6 +459,7 @@ def complete_report(request):
             status='active'
         ).update(status='completed')
     
+    logger.info(f'订单 {reportId} 已由用户 {user.username} 完成')
     return JsonResponse({'message': 'Success'}, status=200)
 
 @logger.catch
@@ -450,14 +468,29 @@ def cancel_report(request):
     """
     用户撤销报单
     同时更新 OrderAssignment 状态为 cancelled
+    已修复IDOR漏洞：验证用户权限
     """
     sessionid = request.COOKIES.get('sessionid')
     user = get_user_from_sessionid(sessionid=sessionid)
     data = json.loads(request.body)
-    reportId = int(data['reportId'])
+    
+    try:
+        reportId = int(data.get('reportId'))
+    except (TypeError, ValueError):
+        return JsonResponse({'message': '无效的订单ID'}, status=400)
 
     try:
         report = call_report_table.objects.get(id=reportId)
+        
+        if report.user != user:
+            logger.warning(f'用户 {user.username} 尝试撤销不属于自己的订单 {reportId}')
+            return JsonResponse({'message': '无权操作此订单'}, status=403)
+        
+        if report.status == '2':
+            return JsonResponse({'message': '订单已完成，无法撤销'}, status=400)
+        
+        if report.status == '3':
+            return JsonResponse({'message': '订单已撤销'}, status=400)
         
         with transaction.atomic():
             report.status = '3'
@@ -468,9 +501,10 @@ def cancel_report(request):
                 status='active'
             ).update(status='cancelled')
         
+        logger.info(f'订单 {reportId} 已由用户 {user.username} 撤销')
         return JsonResponse({'message': 'Success'}, status=200)
-    except:
-        return JsonResponse({'message': 'This report is no exist'}, status=200)
+    except call_report_table.DoesNotExist:
+        return JsonResponse({'message': '订单不存在'}, status=404)
 
 @logger.catch
 @session_check

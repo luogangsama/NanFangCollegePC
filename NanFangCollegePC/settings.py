@@ -22,10 +22,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY")
-print(f"SECRET_KEY: {SECRET_KEY}")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = ["localhost", "gznfpc.cn", "127.0.0.1", "10.20.26.105"]
 
@@ -49,10 +48,12 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    # 'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',  # DRF项目使用手动CSRF验证
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "utils.rate_limit.RateLimitMiddleware",
+    "utils.rate_limit.BruteForceProtectionMiddleware",
 ]
 
 ROOT_URLCONF = "NanFangCollegePC.urls"
@@ -90,9 +91,6 @@ dbSettingsTree = ET.parse("mysql-setting.xml")
 dbSettingsRoot = dbSettingsTree.getroot()
 for child in dbSettingsRoot:
     DATABASES["default"][child.tag] = child.text
-
-print(DATABASES)
-
 
 ASGI_APPLICATION = "NanFangCollegePC.asgi.application"
 # 配置通道层，用于多实例通信
@@ -151,29 +149,24 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # # sessions
 
-# # 默认存储在数据库中
-# SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+# 默认存储在数据库中
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
-# # 会话 Cookie 的配置
-# SESSION_COOKIE_NAME = 'sessionid'  # 默认会话 Cookie 的名称
-# SESSION_COOKIE_AGE = 1209600      # 2 周，单位秒
-# SESSION_COOKIE_SECURE = False     # 如果启用 HTTPS，则设为 True
-# SESSION_COOKIE_HTTPONLY = True    # 禁止 JavaScript 访问 Cookie
-# SESSION_SAVE_EVERY_REQUEST = True # 每次请求都刷新会话的过期时间
+# 会话 Cookie 的配置
+SESSION_COOKIE_NAME = 'sessionid'  # 默认会话 Cookie 的名称
+SESSION_COOKIE_AGE = 1209600      # 2 周，单位秒
+SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False').lower() == 'true'  # 根据环境变量配置HTTPS传输
+SESSION_COOKIE_HTTPONLY = True    # 禁止 JavaScript 访问 Cookie
+SESSION_COOKIE_SAMESITE = 'Lax'   # 防止CSRF攻击
+SESSION_SAVE_EVERY_REQUEST = True # 每次请求都刷新会话的过期时间
 
 # 发送邮箱验证码
 EMAIL_USE_SSL = True
-EMAIL_HOST = "smtp.qq.com"  # 服务器
-EMAIL_PORT = 465
-EMAIL_HOST_USER = "3070845578@qq.com"
-EMAIL_FROM = "3070845578@qq.com"
-try:
-    with open("./code.txt", "r") as f:
-        EMAIL_HOST_PASSWORD = f.readline()
-        EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD[0:-1]
-except:
-    print("请将 code.txt放置于根目录下且确保其内容是正确的授权码，然后重启项目")
-    EMAIL_HOST_PASSWORD = ""
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.qq.com")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 465))
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_FROM = os.environ.get("EMAIL_FROM", EMAIL_HOST_USER)
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 
 from loguru import logger
 import sys
@@ -262,7 +255,6 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # logger.opt(exception=True).error(f"错误信息: {e}")
 
 STATIC_URL = "/static/"
-print(BASE_DIR)
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 

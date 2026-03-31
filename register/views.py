@@ -3,15 +3,24 @@ from django.http import JsonResponse
 from django.http import HttpResponse
 from django.contrib.auth.models import User
 from common.models import UserProfile
+from django.conf import settings
 import json
 import hashlib
-# Create your views here.
 
 def Response(message:str, method:str):
+    """
+    安全响应函数
+    限制CORS为信任的域名，防止跨站攻击
+    """
     response = JsonResponse({'message': message})
-    response['Access-Control-Allow-Origin'] = '*'
+    allowed_origins = ['https://gznfpc.cn', 'https://www.gznfpc.cn']
+    origin = settings.ALLOWED_HOSTS[0] if settings.ALLOWED_HOSTS else allowed_origins[0]
+    if origin not in allowed_origins:
+        origin = allowed_origins[0]
+    response['Access-Control-Allow-Origin'] = origin
     response['Access-Control-Allow-Methods'] = method
-    response['Access-Control-Allow-Headers'] = 'Content-Type'
+    response['Access-Control-Allow-Headers'] = 'Content-Type, X-CSRFToken'
+    response['Access-Control-Allow-Credentials'] = 'true'
     return response
 
 from SMS.views import send_verification_email, verify_code
