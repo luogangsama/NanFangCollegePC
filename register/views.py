@@ -8,8 +8,11 @@ import hashlib
 # Create your views here.
 
 def Response(message:str, method:str):
+    """
+    构建JSON响应，设置安全的CORS头
+    """
     response = JsonResponse({'message': message})
-    response['Access-Control-Allow-Origin'] = '*'
+    response['Access-Control-Allow-Origin'] = 'https://gznfpc.cn'
     response['Access-Control-Allow-Methods'] = method
     response['Access-Control-Allow-Headers'] = 'Content-Type'
     return response
