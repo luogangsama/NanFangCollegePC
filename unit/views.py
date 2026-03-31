@@ -20,6 +20,7 @@ import logging
 import time
 import hmac
 import urllib.parse
+from django.middleware.csrf import get_token
 
 def session_check(func):
     '''
@@ -353,7 +354,8 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 @ensure_csrf_cookie
 def get_csrf_token(request):
     return JsonResponse({
-        "detail": "CSRF cookie set"
+        "detail": "CSRF cookie set",
+        "csrf_token": get_token(request)
     })
 
 def define_options():
