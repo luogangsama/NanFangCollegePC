@@ -185,8 +185,20 @@ def validMessageFromWeiXin(func):
 
         # 判断签名是否一致
         if sign != signature:
-            logger.error(f'非法来源，请求参数为: {request.GET}')
-            HttpResponse("Forbidden")
+            client_ip = request.META.get('HTTP_X_FORWARDED_FOR', '')
+            if client_ip:
+                client_ip = client_ip.split(',')[0].strip()
+            else:
+                client_ip = request.META.get('REMOTE_ADDR', '')
+            user_agent = request.META.get('HTTP_USER_AGENT', '')
+            logger.error(
+                f'非法来源 - IP: {client_ip}, '
+                f'User-Agent: {user_agent}, '
+                f'请求参数: {dict(request.GET)}, '
+                f'计算签名: {sign}, '
+                f'收到签名: {signature}'
+            )
+            return HttpResponse("Forbidden", status=403)
         else: 
             if echostr:
                 logger.success(f'合法来源，请求参数为: {request.GET}')
