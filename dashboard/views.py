@@ -96,6 +96,7 @@ def call_report(request):
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
+        logger.error("Invalid JSON in request body")
         return JsonResponse({"message": "Invalid JSON"}, status=400)
     
     userPhoneNumber = data["userPhoneNumber"]
@@ -105,18 +106,22 @@ def call_report(request):
     call_date = data["call_date"]
 
     if not re.match(r'^1[3-9]\d{9}$', userPhoneNumber):
+        logger.error(f"Invalid phone number format: {userPhoneNumber}")
         return JsonResponse({"message": "Invalid phone number format"}, status=400)
 
     if not address or len(address) > 100:
+        logger.error(f"Invalid address length: {len(address)}")
         return JsonResponse({"message": "Invalid address length"}, status=400)
 
     if not issue or len(issue) > 500:
+        logger.error(f"Invalid issue length: {len(issue)}")
         return JsonResponse({"message": "Invalid issue length"}, status=400)
 
     try:
         parsed_date = validate_and_parse_datetime(date, "date")
         validate_and_parse_datetime(call_date, "call_date")
     except DateTimeValidationError as e:
+        logger.error(f"DateTime validation error: {e.message}")
         return JsonResponse({"message": e.message}, status=400)
 
     weekday = str(parsed_date.weekday() + 1)
@@ -558,13 +563,6 @@ def complete_report(request):
     logger.info(f'订单 {reportId} 已由用户 {user.username} 完成')
     return JsonResponse({'message': 'Success'}, status=200)
 
-        OrderAssignment.objects.filter(report=report, status="active").update(
-            status="completed"
-        )
-
-    return JsonResponse({"message": "Success"}, status=200)
-
-
 @logger.catch
 @session_check
 def cancel_report(request):
@@ -594,11 +592,6 @@ def cancel_report(request):
         
         if report.status == '3':
             return JsonResponse({'message': '订单已撤销'}, status=400)
-        
-    reportId = int(data["reportId"])
-
-    try:
-        report = call_report_table.objects.get(id=reportId)
 
         with transaction.atomic():
             report.status = "3"
@@ -613,14 +606,6 @@ def cancel_report(request):
         return JsonResponse({'message': 'Success'}, status=200)
     except call_report_table.DoesNotExist:
         return JsonResponse({'message': '订单不存在'}, status=404)
-
-            OrderAssignment.objects.filter(report=report, status="active").update(
-                status="cancelled"
-            )
-
-        return JsonResponse({"message": "Success"}, status=200)
-    except:
-        return JsonResponse({"message": "This report is no exist"}, status=200)
 
 
 @logger.catch

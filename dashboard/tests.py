@@ -413,12 +413,12 @@ class DashboardTests(TestCase):
         测试报告提交接口
         """
         data = {
-            "userPhoneNumber": "12345678910",
+            "userPhoneNumber": "15976806251",
             "address": "测试地址",
             "issue": "测试问题",
             "notes": "测试",
             "date": "2024-01-01 10:00",
-            "call_date": "2024-01-01",
+            "call_date": "2025-03-26 15:00",
         }
         response = self.client.login(username="testuser", password="testpassword")
         logger.info(f"登录结果: {response}")

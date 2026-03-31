@@ -52,8 +52,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "utils.rate_limit.RateLimitMiddleware",
-    "utils.rate_limit.BruteForceProtectionMiddleware",
+    # "utils.rate_limit.RateLimitMiddleware",
+    # "utils.rate_limit.BruteForceProtectionMiddleware",
 ]
 
 ROOT_URLCONF = "NanFangCollegePC.urls"
