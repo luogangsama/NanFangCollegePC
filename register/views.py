@@ -9,15 +9,10 @@ import hashlib
 
 def Response(message:str, method:str):
     """
-    安全响应函数
-    限制CORS为信任的域名，防止跨站攻击
+    构建JSON响应，设置安全的CORS头
     """
     response = JsonResponse({'message': message})
-    allowed_origins = ['https://gznfpc.cn', 'https://www.gznfpc.cn']
-    origin = settings.ALLOWED_HOSTS[0] if settings.ALLOWED_HOSTS else allowed_origins[0]
-    if origin not in allowed_origins:
-        origin = allowed_origins[0]
-    response['Access-Control-Allow-Origin'] = origin
+    response['Access-Control-Allow-Origin'] = 'https://gznfpc.cn'
     response['Access-Control-Allow-Methods'] = method
     response['Access-Control-Allow-Headers'] = 'Content-Type, X-CSRFToken'
     response['Access-Control-Allow-Credentials'] = 'true'

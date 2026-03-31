@@ -19,6 +19,7 @@ from loguru import logger
 import hashlib
 import json
 import datetime
+import re
 from lxml import etree
 import time
 
@@ -34,6 +35,35 @@ from unit.views import (
 )
 
 # Create your views here.
+
+
+class DateTimeValidationError(Exception):
+    """
+    日期时间验证异常
+    """
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+
+def validate_and_parse_datetime(date_str, field_name):
+    """
+    验证日期时间格式并返回解析后的datetime对象
+    Args:
+        date_str: 日期时间字符串
+        field_name: 字段名称，用于错误提示
+    Returns:
+        datetime: 解析后的datetime对象
+    Raises:
+        DateTimeValidationError: 验证失败时抛出
+    """
+    if not date_str:
+        raise DateTimeValidationError(f"{field_name} is required")
+    try:
+        parsed = datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M")
+        return parsed
+    except ValueError:
+        raise DateTimeValidationError(f"Invalid {field_name} format")
 
 
 @logger.catch
@@ -58,18 +88,38 @@ def get_user_info(request):
 def call_report(request):
     """
     接受前端发送的报单请求，并验证cookies后将订单存入数据库
+    包含输入验证防止恶意数据
     """
     sessionid = request.COOKIES.get("sessionid")
-    # session验证通过后，获取请求消息体中的内容
     user = get_user_from_sessionid(sessionid=sessionid)
 
-    data = json.loads(request.body)
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"message": "Invalid JSON"}, status=400)
+    
     userPhoneNumber = data["userPhoneNumber"]
     address = data["address"]
     issue = data["issue"]
-    date = data["date"]  # 时间格式%Y-%m-%d %H:%M
-    weekday = str(datetime.datetime.strptime(date, "%Y-%m-%d %H:%M").weekday() + 1)
-    call_date = data["call_date"]  # 订单提交的时间
+    date = data["date"]
+    call_date = data["call_date"]
+
+    if not re.match(r'^1[3-9]\d{9}$', userPhoneNumber):
+        return JsonResponse({"message": "Invalid phone number format"}, status=400)
+
+    if not address or len(address) > 100:
+        return JsonResponse({"message": "Invalid address length"}, status=400)
+
+    if not issue or len(issue) > 500:
+        return JsonResponse({"message": "Invalid issue length"}, status=400)
+
+    try:
+        parsed_date = validate_and_parse_datetime(date, "date")
+        validate_and_parse_datetime(call_date, "call_date")
+    except DateTimeValidationError as e:
+        return JsonResponse({"message": e.message}, status=400)
+
+    weekday = str(parsed_date.weekday() + 1)
 
     call_report_table.objects.create(
         user=user,
@@ -713,9 +763,18 @@ def submit_rating(request):
 
 @logger.catch
 def parse_wechat_message(request):
-    """解析微信XML消息"""
+    """
+    解析微信XML消息
+    使用安全的XML解析器防止XXE注入
+    """
     xml_data = request.body
-    xml_tree = etree.fromstring(xml_data)
+    parser = etree.XMLParser(
+        resolve_entities=False,
+        no_network=True,
+        dtd_validation=False,
+        load_dtd=False
+    )
+    xml_tree = etree.fromstring(xml_data, parser)
     return {
         "to_user": xml_tree.find("ToUserName").text,
         "from_user": xml_tree.find("FromUserName").text,

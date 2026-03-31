@@ -2,27 +2,51 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.utils.html import escape
 
-from unit.views import session_check
+from unit.views import session_check, get_user_from_sessionid
 from common.models import report_message_board_record, call_report_table, User, OrderAssignment
 from django.db.models import Q
 import json
-# Create your views here.
 
 @session_check
 def get_message_record(requests):
-    data = json.loads(requests.body)
+    """
+    获取订单留言记录
+    添加权限验证：只有订单所有者或被分配的维修人员才能访问
+    """
+    sessionid = requests.COOKIES.get('sessionid')
+    current_user = get_user_from_sessionid(sessionid)
+    
+    try:
+        data = json.loads(requests.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'message': 'Invalid JSON'}, status=400)
+    
     reportId = int(data['reportId'])
-    report = call_report_table.objects.get(id=reportId)
+    
+    try:
+        report = call_report_table.objects.get(id=reportId)
+    except call_report_table.DoesNotExist:
+        return JsonResponse({'message': 'Report not found'}, status=404)
+    
+    is_owner = report.user == current_user
+    is_assigned_worker = OrderAssignment.objects.filter(
+        report=report, worker=current_user, status='active'
+    ).exists()
+    
+    if not (is_owner or is_assigned_worker):
+        return JsonResponse({'message': 'Permission denied'}, status=403)
+    
     message_records = report_message_board_record.objects.all().order_by('pk').filter(
         report=report
     )
+    
     return_message_record = {
         'message': 'Success',
         'message_record': []
     }
     for message_record in message_records:
-        username = escape(message_record.user.username)
-        message = escape(message_record.message)
+        username = message_record.user.username
+        message = message_record.message
         date = message_record.date
 
         return_message_record['message_record'].append(

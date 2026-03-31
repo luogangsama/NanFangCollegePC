@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
+DEBUG = False
 
 ALLOWED_HOSTS = ["localhost", "gznfpc.cn", "127.0.0.1", "10.20.26.105"]
 
@@ -91,6 +91,7 @@ dbSettingsTree = ET.parse("mysql-setting.xml")
 dbSettingsRoot = dbSettingsTree.getroot()
 for child in dbSettingsRoot:
     DATABASES["default"][child.tag] = child.text
+
 
 ASGI_APPLICATION = "NanFangCollegePC.asgi.application"
 # 配置通道层，用于多实例通信
@@ -269,7 +270,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://gznfpc.cn",
 ]
 
-CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SECURE = True
 CORS_ALLOW_CREDENTIALS = True
