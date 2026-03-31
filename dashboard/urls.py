@@ -18,36 +18,31 @@ from dashboard.views import reset_email
 from dashboard.views import get_staff_of_same_day
 from dashboard.views import get_report_of_same_day
 from dashboard.views import submit_rating
-from dashboard.views import change_duty_time
-# from dashboard.views import get_duty_time
+
+from dashboard.views import Change_duty_time
 from dashboard.views import weixinTest
 
 from dashboard.views import Get_duty_time
 
 urlpatterns = [
     # path('getWeatherApiKey/', get_weather),
-    path('call_report/', call_report),
-    path('user_get_history_report/', user_get_history_report),
-    path('worker_get_report_list/', worker_get_report_list),
-    path('logout/', log_out),
-
-    path('savePhoneNumber/', save_user_info),
-    path('getPhoneNumber/', get_phone_number),
-    path('renew_password/', renew_password),
-    path('get_user_info/', get_user_info),
-    path('assign_order/', assign_order),
-    path('complete_report/', complete_report),
-    path('cancel_report/', cancel_report),
-    path('reset_email_send_code/', reset_email_send_code),
-    path('reset_email/', reset_email),
-
-    path('today_workers/', get_staff_of_same_day),
-    path('get_report_of_same_day/', get_report_of_same_day),
-    path('submit_rating/', submit_rating),
-    path('change_duty_time/', change_duty_time),
-    # path('get_duty_time/', get_duty_time),
-    path('get_duty_time/', Get_duty_time.as_view(), name='Get_duty_time'),
-
-    path('weixintest/', weixinTest)
-
+    path("call_report/", call_report),
+    path("user_get_history_report/", user_get_history_report),
+    path("worker_get_report_list/", worker_get_report_list),
+    path("logout/", log_out),
+    path("savePhoneNumber/", save_user_info),
+    path("getPhoneNumber/", get_phone_number),
+    path("renew_password/", renew_password),
+    path("get_user_info/", get_user_info),
+    path("assign_order/", assign_order),
+    path("complete_report/", complete_report),
+    path("cancel_report/", cancel_report),
+    path("reset_email_send_code/", reset_email_send_code),
+    path("reset_email/", reset_email),
+    path("today_workers/", get_staff_of_same_day),
+    path("get_report_of_same_day/", get_report_of_same_day),
+    path("submit_rating/", submit_rating),
+    path("change_duty_time/", Change_duty_time.as_view(), name="Change_duty_time"),
+    path("get_duty_time/", Get_duty_time.as_view(), name="Get_duty_time"),
+    path("weixintest/", weixinTest),
 ]
