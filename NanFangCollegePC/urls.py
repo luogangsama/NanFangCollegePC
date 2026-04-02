@@ -24,6 +24,7 @@ from login.views import Signin
 from login.views import AutoSignin
 from login.views import ForgetPassword
 from login.views import ForgetPasswordSendCode
+from unit.views import get_csrf_token
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -38,4 +39,6 @@ urlpatterns = [
     path('api/dashboard/', include('dashboard.urls')),
     path('api/unit/', include('unit.urls')),
     path('api/message_board/', include('message_board.urls')),
+
+    path('csrf/', get_csrf_token, name='get_csrf_token'),
 ]
