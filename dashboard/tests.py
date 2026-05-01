@@ -418,7 +418,8 @@ class DashboardTests(TestCase):
             "issue": "测试问题",
             "notes": "测试",
             "date": "2024-01-01 10:00",
-            "call_date": "2025-03-26 15:00",
+            # "call_date": "2025-03-26 15:00",
+            "call_date": "2026-05-01T05:43:12.079Z",
         }
         response = self.client.login(username="testuser", password="testpassword")
         logger.info(f"登录结果: {response}")

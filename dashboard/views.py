@@ -60,8 +60,23 @@ def validate_and_parse_datetime(date_str, field_name):
     if not date_str:
         raise DateTimeValidationError(f"{field_name} is required")
     try:
-        parsed = datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M")
-        return parsed
+        """
+        自动判断时间格式：
+        - 普通格式 %Y-%m-%d %H:%M 直接解析
+        - ISO 8601 带Z格式 先转换再解析成同结构时间
+        """
+        # 先判断是不是带 Z 的 ISO 格式
+        if date_str.endswith("Z") and "T" in date_str:
+            # 把 Z 换成 +00:00，用 isoformat 解析
+            dt_utc = datetime.datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+            # 格式化转成 %Y-%m-%d %H:%M 字符串，再用 strptime 解析
+            fmt_str = dt_utc.strftime("%Y-%m-%d %H:%M")
+            parsed = datetime.datetime.strptime(fmt_str, "%Y-%m-%d %H:%M")
+            return parsed
+        else:
+            # 普通格式直接解析
+            parsed = datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M")
+            return parsed
     except ValueError:
         raise DateTimeValidationError(f"Invalid {field_name} format")
 
