@@ -13,3 +13,4 @@ websocketNote.md
 **/*$py.class
 **/migrations/*
 staticfiles/*
+.env
