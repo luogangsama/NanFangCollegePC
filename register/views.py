@@ -24,7 +24,10 @@ def register_send_code(request):
     注册时向邮箱发送验证码
     '''
     email = json.loads(request.body)['email']
-    return send_verification_email(email)
+    result = send_verification_email(email)
+    if result:
+        return JsonResponse({'message': '发送成功'}, status=200)
+
 
 
 def register(request):

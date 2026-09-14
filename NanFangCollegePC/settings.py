@@ -163,11 +163,11 @@ SESSION_SAVE_EVERY_REQUEST = True # 每次请求都刷新会话的过期时间
 
 # 发送邮箱验证码
 EMAIL_USE_SSL = True
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.qq.com")
+EMAIL_HOST = str(os.environ.get("EMAIL_HOST", "smtp.qq.com"))
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 465))
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
-EMAIL_FROM = os.environ.get("EMAIL_FROM", EMAIL_HOST_USER)
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+EMAIL_HOST_USER = str(os.environ.get("EMAIL_HOST_USER"))
+EMAIL_FROM = str(os.environ.get("EMAIL_FROM", EMAIL_HOST_USER))
+EMAIL_HOST_PASSWORD = str(os.environ.get("EMAIL_HOST_PASSWORD"))
 
 from loguru import logger
 import sys
