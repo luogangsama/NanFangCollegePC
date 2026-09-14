@@ -167,13 +167,7 @@ EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.qq.com")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 465))
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 EMAIL_FROM = os.environ.get("EMAIL_FROM", EMAIL_HOST_USER)
-try:
-    with open("./code.txt", 'r') as f:
-        EMAIL_HOST_PASSWORD = f.readline()
-        EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD[0: -1]
-except :
-    print("请将 code.txt放置于根目录下且确保其内容是正确的授权码，然后重启项目")
-    EMAIL_HOST_PASSWORD = ''
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 
 from loguru import logger
 import sys
